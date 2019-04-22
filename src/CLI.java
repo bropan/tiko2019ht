@@ -1,5 +1,7 @@
 import java.util.Scanner;
+
 import java.sql.SQLException;
+import java.sql.Connection;
 
 import java.io.PrintWriter;
 import java.io.IOException;
@@ -11,7 +13,7 @@ public class CLI {
     private CLI(){
     }
 
-    public static void run(Scanner userInput) throws SQLException {
+    public static void run(Scanner userInput, Connection c) throws SQLException {
         System.out.println("Launching Sähkötärsky user interface.");
         System.out.println("Enter " + HELP + " for list of available commands.");
         System.out.println("");
@@ -21,7 +23,11 @@ public class CLI {
             System.out.print("Enter command: ");
             String command = userInput.nextLine();
 
-            continueRunning = commandHandler(command,userInput);
+            try {
+                continueRunning = commandHandler(command,userInput);
+            } catch (Exception e){
+                System.out.println("Exception in user interface: " + e.getMessage());
+            }
 
         }
     }

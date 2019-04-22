@@ -21,12 +21,18 @@ public class Main {
         try {
             con = Init.init(s);
 
-            CLI.run(s);
+            CLI.run(s,con);
 
 
 
         } catch (SQLException e) {
             System.out.println("Caught unhandled SQL exception: " + e.getMessage());
+            if(con != null) try {
+                System.out.println("Rolling back!");
+                con.rollback();
+            } catch (SQLException e2){
+                System.out.println("Rollback failed! " + e2.getMessage());
+            }
 			System.out.println("Aborting due to unhandled SQL exception.");
         }             
  
