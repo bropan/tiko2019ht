@@ -137,6 +137,7 @@ public class DatabaseCreator {
     }
 
     public static void createContentIfAbsent(Connection con) throws SQLException {
+
         System.out.println("Populating empty tables...");
 
         String[] asiakasValues = {
@@ -150,9 +151,56 @@ public class DatabaseCreator {
         String[] tyokohdeValues = {
             "1, 'peltotie 1', 'asunto'"           ,
             "2, 'metsatie 2', 'kesamokki'"        ,
-            "3, 'metsatie 2', 'kesamokki'"        ,
+            "3, 'mokkitie 3', 'kesamokki'"        ,
         }; DatabaseStructureHandler.populateTable(con,
                 "tyokohde", tyokohdeValues
         );
+
+        String[] laskutettavaValues = {
+            "1, 'tyo', 'h', 'tyo', NULL, 15",
+            "2, 'pistorasia', 'kpl', 'tarvike', 100, 5",
+            "3, 'sahkojohto', 'm', 'tarvike', 1000, 1",
+        }; DatabaseStructureHandler.populateTable(con,
+                "laskutettava", laskutettavaValues
+        );
+
+        String[] sopimusValues = {
+            "1, 'tuntipalkka', 'sopimus', 1 "  , 
+            "2, 'urakka', 'tarjous', 2 "      , 
+            "3, 'urakka', 'suunnitelma', 3 "  ,  
+        }; DatabaseStructureHandler.populateTable(con,
+                "sopimus", sopimusValues
+        );
+
+        String[] tyosuoritusValues = {
+            "1, 1, 1",
+            "2, 1, 1",
+            "3, 1, 1",
+        }; DatabaseStructureHandler.populateTable(con,
+                "tyosuoritus", tyosuoritusValues
+        );
+
+        String[] sisaltaaValues = {
+           "1, 1, 5, 1.0",
+           "1, 2, 2, 1.0",
+           "1, 3, 10, 1.0",
+
+           "2, 1, 6, 1.0",
+           "2, 2, 1, 1.0",
+           "2, 3, 8, 1.0",
+
+           "3, 1, 5, 1.0",
+           "3, 2, 3, 1.0",
+           "3, 3, 7, 1.0",
+        }; DatabaseStructureHandler.populateTable(con,
+                "sisaltaa", sisaltaaValues
+        );
+
+        String[] laskuValues = {
+            "1, 1, 'kertamaksu', 'kesken', NULL, NULL, 0, 'maksamatta', NULL, 0, 0", 
+        }; DatabaseStructureHandler.populateTable(con,
+                "lasku", laskuValues
+        );
+
     }
 }

@@ -56,6 +56,7 @@ public class Init {
 
             if(con != null){
                 attemptingConnect = false;
+                System.out.println("Connected succesfully.");
             }
         }
 
