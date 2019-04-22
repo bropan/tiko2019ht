@@ -64,7 +64,7 @@ public class DatabaseCreator {
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
                 "laskutettava",
-            "laskutettava_id SERIAL,               "+
+            "laskutettava_id SERIAL,            "+
             "nimi VARCHAR(256),                 "+
             "yksikko VARCHAR(64),               "+
             "tyyppi laskutettava_tyyppi,        "+
@@ -76,7 +76,7 @@ public class DatabaseCreator {
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
                 "tyokohde",
-            "kohde_id SERIAL,                      "+
+            "kohde_id SERIAL,                   "+
             "osoite VARCHAR(256),               "+
             "kohdetyyppi tyokohde_tyyppi,       "+
             "PRIMARY KEY(kohde_id)              "+
@@ -85,7 +85,7 @@ public class DatabaseCreator {
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
                 "sopimus",
-            "sopimus_id SERIAL,                                            "+
+            "sopimus_id SERIAL,                                         "+
             "sopimustyyppi sopimus_tyyppi,                              "+
             "tila sopimus_tila,                                         "+
             "asiakas_id INT,                                            "+
@@ -96,7 +96,7 @@ public class DatabaseCreator {
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
                 "tyosuoritus",
-            "tyosuoritus_id SERIAL,                                        "+
+            "tyosuoritus_id SERIAL,                                     "+
             "kohde_id INT,                                              "+
             "sopimus_id INT,                                            "+
             "FOREIGN KEY (kohde_id) REFERENCES tyokohde(kohde_id),      "+
@@ -119,7 +119,7 @@ public class DatabaseCreator {
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
                 "lasku",
-            "lasku_id SERIAL,                                                          "+
+            "lasku_id SERIAL,                                                       "+
             "sopimus_id INT,                                                        "+
             "laskutyyppi lasku_tyyppi,                                              "+
             "laskun_tila lasku_tila,                                                "+
@@ -139,19 +139,20 @@ public class DatabaseCreator {
     public static void createContentIfAbsent(Connection con) throws SQLException {
         System.out.println("Populating empty tables...");
 
-        String[] values = {
-            "DEFAULT, 'Matti Virtanen','yksityinen'"    ,
-            "DEFAULT, 'Esko Meikäläinen ','yksityinen'" ,
-            "DEFAULT, 'Tauno Salonen ','yksityinen'"    ,
-        };
-        DatabaseStructureHandler.populateTable(con,
-                "asiakas",
-                values
+        String[] asiakasValues = {
+            "1, 'Matti Virtanen','yksityinen'"    ,
+            "2, 'Esko Meikäläinen ','yksityinen'" ,
+            "3, 'Tauno Salonen ','yksityinen'"    ,
+        }; DatabaseStructureHandler.populateTable(con,
+                "asiakas", asiakasValues
         );
 
-        DatabaseStructureHandler.populateTable(con,
-                "asiakas",
-                values
+        String[] tyokohdeValues = {
+            "1, 'peltotie 1', 'asunto'"           ,
+            "2, 'metsatie 2', 'kesamokki'"        ,
+            "3, 'metsatie 2', 'kesamokki'"        ,
+        }; DatabaseStructureHandler.populateTable(con,
+                "tyokohde", tyokohdeValues
         );
     }
 }

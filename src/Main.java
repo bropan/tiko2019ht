@@ -6,6 +6,7 @@ import java.io.FileReader;
 public class Main {
 
     public static final String LOGIN_CONFIG_FILE_PATH = "loginconfig.txt";
+    public static final String GLOBAL_SCHEMA = "sahkofirma";
 
     public LoginCredentials GLOBAL_loginCredentials = null;
 

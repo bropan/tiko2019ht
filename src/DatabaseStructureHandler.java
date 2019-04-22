@@ -4,9 +4,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 //Provides methods for altering database structure i.e adding tables or types
 //Actual database creation is in DatabaseCreator.java
-public class DatabaseStructureHandler {
+public abstract class DatabaseStructureHandler {
 
-    private DatabaseStructureHandler (){
+    private DatabaseStructureHandler (){}
+
+    public static void initDefaultStructure(Connection con, String schemaName) throws SQLException {
+        System.out.println("Managing default database structure...");
+
+        DatabaseStructureHandler.createAndSwitchToSchema(con,schemaName);
+        DatabaseStructureHandler.createTypesIfAbsent(con);
+        DatabaseStructureHandler.createTablesIfAbsent(con,schemaName);
+        DatabaseStructureHandler.createContentIfAbsent(con);
+
+        System.out.println("Database default structure initialized. Types, tables and values have been assured/created.");
     }
 
     public static void createAndSwitchToSchema(Connection con, String schemaName) throws SQLException{
@@ -25,6 +35,16 @@ public class DatabaseStructureHandler {
         Statement changeSchema = con.createStatement();
         changeSchema.executeUpdate("SET search_path TO " + schemaName);
         changeSchema.close();
+    }
+
+    //Removes everything and sets database to default structure
+    public static void resetDatabase(Connection con, String schemaName) throws SQLException{
+        System.out.println("Resetting database!");
+        Statement removeSchema = con.createStatement();
+        removeSchema.executeUpdate("DROP SCHEMA "+schemaName+" CASCADE");
+        removeSchema.close();
+        
+        initDefaultStructure(con,schemaName);
     }
 
     //Creates ENUM types required by the database if they don't exist

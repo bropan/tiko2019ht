@@ -9,11 +9,12 @@ public class CLI {
     private final static String QUIT = "quit";
     private final static String HELP = "help";
     private final static String WRITE_CREDENTIALS = "createlogin";
+    private final static String RESET_DATABASE = "resetdatabase";
 
     private CLI(){
     }
 
-    public static void run(Scanner userInput, Connection c) throws SQLException {
+    public static void run(Scanner userInput, Connection con) throws SQLException {
         System.out.println("Launching Sähkötärsky user interface.");
         System.out.println("Enter " + HELP + " for list of available commands.");
         System.out.println("");
@@ -24,15 +25,22 @@ public class CLI {
             String command = userInput.nextLine();
 
             try {
-                continueRunning = commandHandler(command,userInput);
-            } catch (Exception e){
+                con.setAutoCommit(false);
+                System.out.println();
+                continueRunning = commandHandler(command,userInput,con);
+                con.commit();
+            } catch (Exception e) {
                 System.out.println("Exception in user interface: " + e.getMessage());
+                con.rollback();
+                System.out.println("Rolled back, no changes made to database.");
+            } finally {
+                System.out.println();
+                con.setAutoCommit(true);
             }
-
         }
     }
 
-    private static boolean commandHandler(String command, Scanner userInput){
+    private static boolean commandHandler(String command, Scanner userInput, Connection con) throws SQLException {
         boolean continueRunning = true;
             switch(command){
                 case QUIT:
@@ -40,6 +48,9 @@ public class CLI {
                     break;
                 case WRITE_CREDENTIALS:
                     writeCredentialsToFile(userInput, Main.LOGIN_CONFIG_FILE_PATH);
+                    break;
+                case RESET_DATABASE:
+                    resetDatabase(userInput, con);
                     break;
                 case HELP:
                     printHelp();
@@ -59,6 +70,8 @@ public class CLI {
                 QUIT + " - Exit program"
                 + "\n" +
                 WRITE_CREDENTIALS + " - Create/update a login configuration file" 
+                + "\n" +
+                RESET_DATABASE  + " - Reset database (warning: removes all entered data!)"
                 + "\n" +
                 HELP + " - Print this help"
                 + "\n" +
@@ -92,6 +105,17 @@ public class CLI {
         }
     }
 
+    private static void resetDatabase(Scanner userInput,Connection con) throws SQLException {
+        boolean confirm = CLI.askYesOrNo(
+                "WARNING: Do you really want to reset the database? "
+                +"This will remove all entered data and replace it with default data!",
+                userInput
+                );
+        if(confirm){
+            DatabaseStructureHandler.resetDatabase(con, Main.GLOBAL_SCHEMA); 
+        }
+    }
+
     public static String askUser(String question, Scanner s){
         System.out.print(question);
         return s.nextLine();
@@ -99,6 +123,7 @@ public class CLI {
 
     public static boolean askYesOrNo(String question, Scanner s){
         System.out.println(question);
+        System.out.print("Enter y for YES, n for NO: ");
         while(true){
             switch(s.nextLine().toLowerCase()){
                 case "y":
@@ -108,7 +133,7 @@ public class CLI {
                 case "no":
                     return false;
                 default:
-                    System.out.print("Enter y for YES, n for NO:");
+                    System.out.print("Enter y for YES, n for NO: ");
             }
         }
     }
