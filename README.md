@@ -1,6 +1,7 @@
 # Database Programming 2019 Course Work 
 
-##Setting things up
+## Setting things up
+
 Connect to your shell, open psql and type:
 
 ```psql
@@ -27,7 +28,7 @@ Switch there:
 cd tiko2019ht
 ```
 
-##Usage
+## Usage
 
 To build (and download the driver if needed):
 
