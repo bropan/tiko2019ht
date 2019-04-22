@@ -1,25 +1,49 @@
 # Database Programming 2019 Course Work 
 
-Enter a suitable directory in your university shell with cd
+##Setting things up
+Connect to your shell, open psql and type:
 
-Type:
+```psql
+ALTER_USER <omappt> WITH ENCRYPTED PASSWORD '<password>';
+```
 
+Create/Enter a suitable directory in your university shell
+
+```bash
+mkdir tiko
+cd tiko
+```
+
+Clone this repository
+
+```bash
 git clone https://github.com/bropan/tiko2019ht.git
+```
 
-tiko2019ht directory will appear.
+tiko2019ht directory will appear in this directory.
+Switch there:
 
-Place the psql driver postgresql-42.2.5.jar to drivers/postgresql-42.2.5.jar
+```bash
+cd tiko2019ht
+```
 
-To build:
+##Usage
 
+To build (and download the driver if needed):
+
+```bash
 ./build.sh
+```
 
 To run:
 
+```bash
 ./run.sh
+```
 
-or
+or do both:
 
+```bash
 ./buildrun.sh
-
+```
 
