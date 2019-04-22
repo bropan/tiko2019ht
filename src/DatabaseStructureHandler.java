@@ -2,7 +2,8 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-//THIS WILL CREATE DATABASE SCHEMA AND/OR TABLES IF THEY DON'T EXIST YET
+//Provides methods for altering database structure i.e adding tables or types
+//Actual database creation is in DatabaseCreator.java
 public class DatabaseStructureHandler {
 
     private DatabaseStructureHandler (){
@@ -26,28 +27,17 @@ public class DatabaseStructureHandler {
         changeSchema.close();
     }
 
+    //Creates ENUM types required by the database if they don't exist
     public static void createTypesIfAbsent(Connection con) throws SQLException {
-        checkAndCreateType(con,
-                "asiakas_tyyppi",
-                "'yrittaja','yksityinen'"); 
+        DatabaseCreator.createTypesIfAbsent(con);
     }
 
     //Checks if all tables defined in this method exist and creates them if they don't
     public static void createTablesIfAbsent(Connection con, String schemaName) throws SQLException {
-        String tableName = null;
-
-        tableName = "asiakas";
-        checkAndCreateTable(con,schemaName,tableName,
-        "CREATE TABLE " + tableName + "(        "+
-        "    asiakas_id INT,                    "+
-        "    nimi VARCHAR(128),                 "+
-        "    asiakastyyppi asiakas_tyyppi,      "+
-        "    PRIMARY KEY(asiakas_id)            "+
-        ")                                      "+
-        "");
+        DatabaseCreator.createTablesIfAbsent(con, schemaName);
     }
 
-    private static void checkAndCreateTable(Connection con, String schemaName, String tableName, String content) throws SQLException {	
+    public static void checkAndCreateTable(Connection con, String schemaName, String tableName, String content) throws SQLException {	
         try {
             Statement tableCheck = con.createStatement();
             ResultSet tableResult = tableCheck.executeQuery(
@@ -61,17 +51,18 @@ public class DatabaseStructureHandler {
             if(!foundTable){
                 System.out.println("Table " + tableName + " not found. Creating it...");
                 Statement createTable = con.createStatement();
-                createTable.executeUpdate(content);
+                createTable.executeUpdate("CREATE TABLE "+tableName+" ("+content+")");
                 createTable.close();
             }
         } catch (SQLException e){
             System.out.println("SQLException when checking/creating table " + tableName + ": " + e.getMessage());
+            throw e;
         }
     }
 
 
 
-    private static void checkAndCreateType(Connection con, String typeName, String fields) throws SQLException {
+    public static void checkAndCreateType(Connection con, String typeName, String fields) throws SQLException {
         try {
         Statement createType = con.createStatement();
         createType.executeUpdate(

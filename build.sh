@@ -23,7 +23,7 @@ then
     fi
 fi
 
-
+#Add new .java source code files here!
 javac                   \
         src/Main.java   \
         src/Init.java   \
@@ -31,6 +31,7 @@ javac                   \
         src/Utils.java  \
         src/LoginCredentials.java \
         src/DatabaseStructureHandler.java \
+        src/DatabaseCreator.java \
 
 if [ $? -ne 0 ]; 
 then 
@@ -40,6 +41,8 @@ fi
 
 if [ "$success" = true ] ; then
     echo "Built tiko2019ht succesfully."
+    exit 0
 else
     echo "Build failed."
+    exit 1
 fi
