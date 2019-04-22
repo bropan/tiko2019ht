@@ -10,14 +10,14 @@ CREATE TYPE laskutettava_tyyppi AS ENUM ('tyo','tarvike');
 
 ’
 CREATE TABLE asiakas ( 
-    asiakas_id INT, 
+    asiakas_id SERIAL, 
     nimi VARCHAR(128), 
     asiakastyyppi asiakas_tyyppi, 
     PRIMARY KEY(asiakas_id) 
 ); 
 
 CREATE TABLE laskutettava ( 
-    laskutettava_id INT, 
+    laskutettava_id SERIAL, 
     nimi VARCHAR(256), 
     yksikko VARCHAR(64), 
     tyyppi laskutettava_tyyppi, 
@@ -27,14 +27,14 @@ CREATE TABLE laskutettava (
 ); 
 
 CREATE TABLE tyokohde ( 
-    kohde_id INT, 
+    kohde_id SERIAL, 
     osoite VARCHAR(256), 
     kohdetyyppi tyokohde_tyyppi, 
     PRIMARY KEY(kohde_id) 
 ); 
 
 CREATE TABLE sopimus ( 
-    sopimus_id INT, 
+    sopimus_id SERIAL, 
     sopimustyyppi sopimus_tyyppi, 
     tila sopimus_tila,
     asiakas_id INT, 
@@ -43,7 +43,7 @@ CREATE TABLE sopimus (
 ); 
 
 CREATE TABLE tyosuoritus (
-    tyosuoritus_id INT,
+    tyosuoritus_id SERIAL,
     kohde_id INT,
     sopimus_id INT,
     FOREIGN KEY (kohde_id) REFERENCES tyokohde(kohde_id),
@@ -62,7 +62,7 @@ CREATE TABLE sisaltaa (
 ); 
 
 CREATE TABLE lasku ( 
-    lasku_id INT, 
+    lasku_id SERIAL, 
     sopimus_id INT, 
     laskutyyppi lasku_tyyppi, 
     laskun_tila lasku_tila, 

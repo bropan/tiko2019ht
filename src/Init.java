@@ -65,6 +65,7 @@ public class Init {
             DatabaseStructureHandler.createAndSwitchToSchema(con,SCHEMA);
             DatabaseStructureHandler.createTypesIfAbsent(con);
             DatabaseStructureHandler.createTablesIfAbsent(con,SCHEMA);
+            DatabaseStructureHandler.createContentIfAbsent(con);
             con.commit();
         } catch (SQLException e){
             System.out.println("Exception in database structure checking/creation: " + e.getMessage());

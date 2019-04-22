@@ -80,4 +80,29 @@ public class DatabaseStructureHandler {
             throw e;
         }
     }
+
+    public static void createContentIfAbsent(Connection con) throws SQLException {
+        DatabaseCreator.createContentIfAbsent(con);
+    } 
+
+    public static void populateTable(Connection con, String tableName, String[] values) throws SQLException {
+        try {
+            Statement contentCheck = con.createStatement();
+            ResultSet contentResult = contentCheck.executeQuery("SELECT * FROM " + tableName);
+            boolean hasContent = contentResult.next();
+            contentCheck.close();
+
+            if(!hasContent){
+                System.out.println("Table "+tableName+" is empty. Adding default values.");
+                for(String val : values){
+                    Statement addContent = con.createStatement();
+                    addContent.executeUpdate("INSERT INTO "+tableName+" VALUES ("+val+")");
+                    addContent.close();
+                }
+            }
+        } catch (SQLException e){
+            System.out.println("SQLException when checking/populating table " + tableName + ": " + e.getMessage());
+            throw e;
+        }
+    }
 }

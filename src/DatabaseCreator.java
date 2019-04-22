@@ -6,6 +6,7 @@ public class DatabaseCreator {
     private DatabaseCreator(){}
 
     public static void createTypesIfAbsent(Connection con) throws SQLException {
+        System.out.println("Checking that all required types exist...");
         DatabaseStructureHandler.checkAndCreateType(con,
             "asiakas_tyyppi",
                 "'yrittaja','yksityinen'"
@@ -49,11 +50,12 @@ public class DatabaseCreator {
     }
 
     public static void createTablesIfAbsent(Connection con, String schemaName) throws SQLException {
+        System.out.println("Checking that all required tables exist...");
         String tableName = null;
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName,
                 "asiakas",
-        "    asiakas_id INT,                    "+
+        "    asiakas_id SERIAL,                 "+
         "    nimi VARCHAR(128),                 "+
         "    asiakastyyppi asiakas_tyyppi,      "+
         "    PRIMARY KEY(asiakas_id)            "+
@@ -62,7 +64,7 @@ public class DatabaseCreator {
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
                 "laskutettava",
-            "laskutettava_id INT,               "+
+            "laskutettava_id SERIAL,               "+
             "nimi VARCHAR(256),                 "+
             "yksikko VARCHAR(64),               "+
             "tyyppi laskutettava_tyyppi,        "+
@@ -74,7 +76,7 @@ public class DatabaseCreator {
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
                 "tyokohde",
-            "kohde_id INT,                      "+
+            "kohde_id SERIAL,                      "+
             "osoite VARCHAR(256),               "+
             "kohdetyyppi tyokohde_tyyppi,       "+
             "PRIMARY KEY(kohde_id)              "+
@@ -83,7 +85,7 @@ public class DatabaseCreator {
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
                 "sopimus",
-            "sopimus_id INT,                                            "+
+            "sopimus_id SERIAL,                                            "+
             "sopimustyyppi sopimus_tyyppi,                              "+
             "tila sopimus_tila,                                         "+
             "asiakas_id INT,                                            "+
@@ -94,7 +96,7 @@ public class DatabaseCreator {
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
                 "tyosuoritus",
-            "tyosuoritus_id INT,                                        "+
+            "tyosuoritus_id SERIAL,                                        "+
             "kohde_id INT,                                              "+
             "sopimus_id INT,                                            "+
             "FOREIGN KEY (kohde_id) REFERENCES tyokohde(kohde_id),      "+
@@ -117,7 +119,7 @@ public class DatabaseCreator {
 
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
                 "lasku",
-            "lasku_id INT,                                                          "+
+            "lasku_id SERIAL,                                                          "+
             "sopimus_id INT,                                                        "+
             "laskutyyppi lasku_tyyppi,                                              "+
             "laskun_tila lasku_tila,                                                "+
@@ -134,4 +136,22 @@ public class DatabaseCreator {
         ); 
     }
 
+    public static void createContentIfAbsent(Connection con) throws SQLException {
+        System.out.println("Populating empty tables...");
+
+        String[] values = {
+            "DEFAULT, 'Matti Virtanen','yksityinen'"    ,
+            "DEFAULT, 'Esko Meikäläinen ','yksityinen'" ,
+            "DEFAULT, 'Tauno Salonen ','yksityinen'"    ,
+        };
+        DatabaseStructureHandler.populateTable(con,
+                "asiakas",
+                values
+        );
+
+        DatabaseStructureHandler.populateTable(con,
+                "asiakas",
+                values
+        );
+    }
 }
