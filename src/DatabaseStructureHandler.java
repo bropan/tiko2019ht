@@ -28,7 +28,8 @@ public abstract class DatabaseStructureHandler {
         if(!foundSchema){
             System.out.println("Schema not found, creating schema with name " + schemaName);
             Statement newSchema = con.createStatement();
-            newSchema.executeUpdate("CREATE SCHEMA " + schemaName);
+            newSchema.executeUpdate(
+                    "CREATE SCHEMA " + schemaName + " AUTHORIZATION " + Main.GLOBAL_SCHEMA_OWNER);
             newSchema.close();
         }
 
