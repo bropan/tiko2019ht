@@ -56,6 +56,7 @@ public class DatabaseCreator {
         DatabaseStructureHandler.checkAndCreateTable(con,schemaName,
                 "asiakas",
         "    asiakas_id SERIAL,                 "+
+        "    osoite VARCHAR(256),               "+
         "    nimi VARCHAR(128),                 "+
         "    asiakastyyppi asiakas_tyyppi,      "+
         "    PRIMARY KEY(asiakas_id)            "+

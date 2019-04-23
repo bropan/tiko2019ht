@@ -12,6 +12,7 @@ CREATE TYPE laskutettava_tyyppi AS ENUM ('tyo','tarvike');
 CREATE TABLE asiakas ( 
     asiakas_id SERIAL, 
     nimi VARCHAR(128), 
+    osoite VARCHAR(256),
     asiakastyyppi asiakas_tyyppi, 
     PRIMARY KEY(asiakas_id) 
 ); 
