@@ -16,6 +16,7 @@ public class CLI {
     private final static String ADD = "add";
     private final static String ADD_CUSTOMER = "addcustomer";
     private final static String ADD_WORKSITE = "addworksite";
+    private final static String SHOW_TABLE = "showtable";
     private final static String HELP = "help";
     private final static String WRITE_CREDENTIALS = "createlogin";
     private final static String RESET_DATABASE = "resetdatabase";
@@ -64,6 +65,9 @@ public class CLI {
                 case ADD_WORKSITE:
                     addWorksite(userInput, con);
                     break;
+                case SHOW_TABLE:
+                    showTable(userInput, con);
+                    break;
                 case WRITE_CREDENTIALS:
                     writeCredentialsToFile(userInput, Main.LOGIN_CONFIG_FILE_PATH);
                     break;
@@ -92,6 +96,8 @@ public class CLI {
                 ADD_CUSTOMER + " - Add new customer interactively"
                 + "\n" +
                 ADD_WORKSITE + " - Add a new worksite interactively"
+                + "\n" +
+                SHOW_TABLE + " - Show data about customers/worksites/bills etc."
                 + "\n" +
                 WRITE_CREDENTIALS + " - Create/update a login configuration file" 
                 + "\n" +
@@ -276,6 +282,50 @@ public class CLI {
             }
         }
         return selection;
+    }
+
+    public static void showTable(Scanner userInput, Connection con) throws SQLException {
+        System.out.println("Show which table?");
+
+        ArrayList<String> options = new ArrayList<>(Arrays.asList(
+            "asiakas",
+            "tyokohde",
+            "tyosuoritus",
+            "laskutettava",
+            "sopimus",
+            "sisaltaa",
+            "lasku"
+        ));
+
+        int selection = askSelection("Show which table? ", options, userInput);
+
+        Statement showTable = con.createStatement();
+        ResultSet rs = showTable.executeQuery("SELECT * FROM " + options.get(selection));
+        ResultSetMetaData rsmd = rs.getMetaData();
+
+        int columns = rsmd.getColumnCount();
+
+        for(int i=1; i <= columns; i++) {
+            String name = null;
+            name = String.format("%15.15s| ", rsmd.getColumnName(i));
+            System.out.print(name);
+        }
+
+        System.out.println();
+
+        for(int i=1; i<= columns; i++) {
+            System.out.print("----------------");
+        }
+
+        System.out.println();
+
+        while (rs.next()) {
+            String dataRow = "";
+            for(int i=1; i <= columns; i++){
+                dataRow += String.format("%15.15s| ", rs.getString(i));
+            }
+            System.out.println(dataRow);
+        }
     }
 
     public static void addCustomer(Scanner userInput, Connection con) throws SQLException {
