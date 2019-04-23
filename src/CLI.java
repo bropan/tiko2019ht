@@ -16,6 +16,7 @@ public class CLI {
     private final static String ADD = "add";
     private final static String ADD_CUSTOMER = "addcustomer";
     private final static String ADD_WORKSITE = "addworksite";
+    private final static String CHARGEABLES = "chargeables";
     private final static String SHOW_TABLE = "showtable";
     private final static String HELP = "help";
     private final static String WRITE_CREDENTIALS = "createlogin";
@@ -68,6 +69,9 @@ public class CLI {
                 case ADD_WORKSITE:
                     addWorksite(userInput, con);
                     break;
+                case CHARGEABLES:
+                    chargeables(userInput, con);
+                    break;
                 case SHOW_TABLE:
                     showTable(userInput, con);
                     break;
@@ -99,6 +103,8 @@ public class CLI {
                 ADD_CUSTOMER + " - Add new customer interactively"
                 + "\n" +
                 ADD_WORKSITE + " - Add a new worksite interactively"
+                + "\n" +
+                CHARGEABLES + " - Add utility/work types or increase their stock amount"
                 + "\n" +
                 SHOW_TABLE + " - Show data about customers/worksites/bills etc."
                 + "\n" +
@@ -328,6 +334,81 @@ public class CLI {
             }
             System.out.println(dataRow);
         }
+    }
+
+    public static void chargeables(Scanner userInput, Connection con) throws SQLException {
+
+        ArrayList<String> options = new ArrayList<>(Arrays.asList(
+            "add new work/utility",
+            "increase existing stock"
+        ));
+        int selection = askSelection("What do you want to do?", options, userInput);
+        switch(selection){
+            case 0:
+                addChargeable(userInput, con);
+                break;
+            case 1:
+                searchChargeable(userInput,con);
+                break;
+        }
+    }
+
+    public static void addChargeable(Scanner userInput, Connection con) throws SQLException {
+        System.out.println("Adding utility/work that can be charged from the customer");
+
+        String name = askUser("Enter name for the chargeable: ",userInput);
+        String unit = askUser("Enter the unit type (kg,m,kpl etc): ",userInput);
+        ArrayList<String> types = new ArrayList<>(Arrays.asList(
+            "tyo",
+            "tarvike"
+        ));
+        int type = askSelection("Enter the type: ", types, userInput);
+        if(type==-1) return;
+        String wares = askUser("Enter the amount:",userInput);
+        String price = askUser("Enter the price:",userInput);
+        String values = String.format(
+                "DEFAULT,'%s','%s','%s','%s','%s'"
+                ,name,unit,types.get(type),wares,price
+                );
+        askInsertion(userInput,con,"laskutettava",values);
+    }
+
+    //Find chargeable by name
+    public static int searchChargeable(Scanner userInput, Connection con) throws SQLException {
+        int selection = -1;
+        String what = askUser("Enter name of chargeable to search for: ",userInput);
+        Statement search = con.createStatement();
+        ResultSet rs = search.executeQuery(
+                "SELECT * FROM " + "laskutettava" + " WHERE nimi = '" +what+ "'");
+        System.out.println("Results:");
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columns = rsmd.getColumnCount();
+
+        //Print header
+        System.out.print(INDENT + "    ");
+        for(int i=1; i <= columns; i++) {
+            System.out.print(
+                String.format( "%12.12s| ", rsmd.getColumnName(i) )
+            );
+        }
+        System.out.println();
+
+        ArrayList<String> values = new ArrayList<>();
+        while(rs.next()){
+            String row = "";
+            for(int i=1; i <= columns; i++) {
+                row += String.format("%12.12s| ", rs.getString(i));
+            }
+            values.add(row);
+        }
+        if(values.size() > 0)
+            selection = askSelection("Select result row -------------------- ",values, userInput);
+
+        return selection;
+    }
+
+    public static void increaseChargeableWares(Scanner userInput, Connection con) throws SQLException {
+
     }
 
     public static void addCustomer(Scanner userInput, Connection con) throws SQLException {
