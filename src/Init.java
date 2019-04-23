@@ -19,6 +19,7 @@ public class Init {
     private static final String DATABASE = "tiko2019r18";
     private static final String USERNAME = "";
     private static final String PASSWORD = "";
+	private static final String SCHEMA = "sahkofirma";
 
     private static final String INIT_SEPARATOR_START = "--------------------" + " INIT_START " + "--------------------" ;
     private static final String INIT_SEPARATOR_END = "--------------------" + " INIT_END " +  "--------------------" + "\n";
@@ -56,13 +57,14 @@ public class Init {
 
             if(con != null){
                 attemptingConnect = false;
-                System.out.println("Connected succesfully.");
             }
         }
 
         try {
             con.setAutoCommit(false);
-            DatabaseStructureHandler.initDefaultStructure(con,Main.GLOBAL_SCHEMA);
+            DatabaseStructureHandler.createAndSwitchToSchema(con,SCHEMA);
+            DatabaseStructureHandler.createTypesIfAbsent(con);
+            DatabaseStructureHandler.createTablesIfAbsent(con,SCHEMA);
             con.commit();
         } catch (SQLException e){
             System.out.println("Exception in database structure checking/creation: " + e.getMessage());
