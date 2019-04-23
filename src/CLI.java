@@ -21,6 +21,8 @@ public class CLI {
     private final static String WRITE_CREDENTIALS = "createlogin";
     private final static String RESET_DATABASE = "resetdatabase";
 
+    private final static String INDENT = "    ";
+
     private CLI(){
     }
 
@@ -40,7 +42,8 @@ public class CLI {
                 continueRunning = commandHandler(command,userInput,con);
                 con.commit();
             } catch (Exception e) {
-                System.out.println("Exception in user interface: " + e.getMessage());
+                System.out.println("Unexpected exception happened in the user interface: " + e.getMessage());
+                e.printStackTrace();
                 con.rollback();
                 System.out.println("Rolled back, no changes made to database.");
             } finally {
@@ -248,9 +251,9 @@ public class CLI {
         }
 
         for(int i=0; i < optionsLength; ++i){ //Listing options
-            System.out.println("    " + "[" + (i+1) + "] " + options.get(i));
+            System.out.println(INDENT + "[" + (i+1) + "] " + options.get(i));
         }
-        System.out.println("    " + "[a] ABORT");
+        System.out.println(INDENT + "[a] ABORT");
 
         boolean asking = true;
         while(asking){
@@ -285,7 +288,6 @@ public class CLI {
     }
 
     public static void showTable(Scanner userInput, Connection con) throws SQLException {
-        System.out.println("Show which table?");
 
         ArrayList<String> options = new ArrayList<>(Arrays.asList(
             "asiakas",
@@ -307,14 +309,14 @@ public class CLI {
 
         for(int i=1; i <= columns; i++) {
             String name = null;
-            name = String.format("%15.15s| ", rsmd.getColumnName(i));
+            name = String.format("%12.12s| ", rsmd.getColumnName(i));
             System.out.print(name);
         }
 
         System.out.println();
 
         for(int i=1; i<= columns; i++) {
-            System.out.print("----------------");
+            System.out.print("-------------");
         }
 
         System.out.println();
@@ -322,7 +324,7 @@ public class CLI {
         while (rs.next()) {
             String dataRow = "";
             for(int i=1; i <= columns; i++){
-                dataRow += String.format("%15.15s| ", rs.getString(i));
+                dataRow += String.format("%12.12s| ", rs.getString(i));
             }
             System.out.println(dataRow);
         }
