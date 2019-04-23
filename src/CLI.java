@@ -15,6 +15,7 @@ public class CLI {
     private final static String QUIT = "quit";
     private final static String ADD = "add";
     private final static String ADD_CUSTOMER = "addcustomer";
+    private final static String ADD_WORKSITE = "addworksite";
     private final static String HELP = "help";
     private final static String WRITE_CREDENTIALS = "createlogin";
     private final static String RESET_DATABASE = "resetdatabase";
@@ -60,6 +61,9 @@ public class CLI {
                 case ADD_CUSTOMER:
                     addCustomer(userInput, con);
                     break;
+                case ADD_WORKSITE:
+                    addWorksite(userInput, con);
+                    break;
                 case WRITE_CREDENTIALS:
                     writeCredentialsToFile(userInput, Main.LOGIN_CONFIG_FILE_PATH);
                     break;
@@ -86,6 +90,8 @@ public class CLI {
                 ADD + " - Add something (works badly)"
                 + "\n" +
                 ADD_CUSTOMER + " - Add new customer interactively"
+                + "\n" +
+                ADD_WORKSITE + " - Add a new worksite interactively"
                 + "\n" +
                 WRITE_CREDENTIALS + " - Create/update a login configuration file" 
                 + "\n" +
@@ -289,10 +295,27 @@ public class CLI {
         askInsertion(userInput,con,"asiakas",values);
     }
 
+    public static void addWorksite(Scanner userInput, Connection con) throws SQLException {
+        System.out.println("Adding a new worksite");
+        String address = askUser("Enter address: ",userInput);
+        ArrayList<String> options = new ArrayList<>(Arrays.asList(
+            "kesamokki",
+            "asunto",
+            "muu"
+        ));
+        int type = askSelection("Enter customer type: ", options, userInput);
+        if(type==-1) return;
+        String values = String.format(
+                "DEFAULT,'%s','%s'"
+                ,address,options.get(type)
+                );
+        askInsertion(userInput,con,"tyokohde",values);
+    }
+
     public static void askInsertion(Scanner userInput, Connection con, String tableName, String values) throws SQLException {
         if( askYesOrNo("Do you want to add the values (" + values + ") into the table " + tableName + "?", userInput) ){
             Statement insertion = con.createStatement();
-            insertion.executeUpdate("INSERT INTO " + "asiakas" + " VALUES (" +values+ ")");
+            insertion.executeUpdate("INSERT INTO " + tableName + " VALUES (" +values+ ")");
             insertion.close();
             System.out.println("Values (" + values + ") were added to table "+tableName+".");
         } else {
