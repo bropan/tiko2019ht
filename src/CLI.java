@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.Types;
 
 import java.io.PrintWriter;
 import java.io.IOException;
@@ -92,21 +93,31 @@ public class CLI {
     }
 
     public static void addInteractive(Scanner userInput, Connection con) throws SQLException {
-        ArrayList<String> addOptions = new ArrayList<>(Arrays.asList(
-            "asiakas",
-            "tyokohde",
-            "tyosuoritus",
-            "laskutettava"
-        ));
-        int answer = askSelection("Select what needs to be added ", addOptions, userInput);
-        if(answer >= 0){
-            String tableName = addOptions.get(answer);
-            System.out.println("You answered " + tableName);
-            enterColumns(userInput, tableName, con);
-        } else {
-            return;
+        System.out.println();
+        System.out.println("--- Adding values ---");
+        boolean adding = true;
+        while(adding){
+            ArrayList<String> addOptions = new ArrayList<>(Arrays.asList(
+                "asiakas",
+                "tyokohde",
+                "tyosuoritus",
+                "laskutettava"
+            ));
+            int answer = askSelection("Select what needs to be added ", addOptions, userInput);
+            if(answer >= 0){
+                String tableName = addOptions.get(answer);
+                System.out.println("You answered " + tableName);
+                boolean done = enterColumns(userInput, tableName, con);
+                if(done){
+                    adding = false;
+                }
+            } else {
+                adding = false;
+            }
         }
 
+        System.out.println("--------------------");
+        System.out.println();
     }
 
     public static LoginCredentials loginFromUserInput(Scanner userInput){
@@ -147,24 +158,67 @@ public class CLI {
 
     //returns false if aborted
     private static boolean enterColumns(Scanner userInput, String tableName, Connection con) throws SQLException {
+
         Statement getColumns = con.createStatement();
         ResultSet rs = getColumns.executeQuery("SELECT * FROM "+tableName);
         ResultSetMetaData rsmd = rs.getMetaData();
+
         int columnCount = rsmd.getColumnCount();
         System.out.println(tableName + " has " + columnCount + " columns");
+
+        System.out.println();
+        String valuesAsString = "";
         for(int i=1; i <= columnCount; ++i){
-            enterColumn(userInput,rs,i,con);
+            String enteredValue = enterColumn(userInput,rs,i,con);
+            valuesAsString += i==1 ? enteredValue : "," + enteredValue;
+        }
+        System.out.println();
+        getColumns.close();
+
+        if(askYesOrNo("Insert " + valuesAsString + " into " + tableName + "?", userInput)){
+            Statement insertValues = con.createStatement();
+            insertValues.executeUpdate("INSERT INTO " + tableName + " VALUES (" +valuesAsString+")");
+            System.out.println("Inserted " + valuesAsString + " into " + tableName);
+        } else {
+            return false;
         }
 
         return true;
     }
     
-    private static boolean enterColumn(Scanner userInput, ResultSet rs, int column, Connection con) throws SQLException {
+    private static String enterColumn(Scanner userInput, ResultSet rs, int column, Connection con) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
         String label = rsmd.getColumnLabel(column);
         String name = rsmd.getColumnName(column);
-        System.out.println(label + " " + name);
-        return true;
+
+        if(rsmd.isAutoIncrement(column)){
+            return "DEFAULT";
+        }
+
+        int type = rsmd.getColumnType(column);
+        System.out.println("debug, column name: " + name + " type: " + type);
+        boolean entering = true;
+        String typeStr = null;
+        switch(type){
+            case Types.VARCHAR:
+                typeStr = "text";
+                break;
+
+            case Types.INTEGER:
+                typeStr = "number";
+                break;
+            default:
+                System.out.println("UNIDENTIFIED VARIABLE TYPE: " + type);
+                typeStr = "(UNIDENTIFIED CONSTANT" + type + ")";
+                break;
+        }
+        String answer = askUser(
+
+                "Enter value for attribute [" + name + "] which is of type " + typeStr + ": "
+                , userInput);
+        //System.out.println("You typed: '" + answer + "'");
+
+        return "'" + answer + "'";
     }
 
     public static int askSelection(String question, ArrayList<String> options, Scanner userInput){
