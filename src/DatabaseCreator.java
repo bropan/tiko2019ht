@@ -142,9 +142,9 @@ public class DatabaseCreator {
         System.out.println("Populating empty tables...");
 
         String[] asiakasValues = {
-            "DEFAULT, 'Matti Virtanen', 'peenistie 2','yksityinen'"    ,
-            "DEFAULT, 'Esko Meikäläinen', 'pallipolku 69','yksityinen'" ,
-            "DEFAULT, 'Tauno Salonen', 'kullikuja 666','yksityinen'"    ,
+            "DEFAULT, 'Matti Virtanen', 'peenistie 2', 'yksityinen'"    ,
+            "DEFAULT, 'Esko Meikäläinen', 'pallipolku 69', 'yksityinen'" ,
+            "DEFAULT, 'Tauno Salonen', 'kullikuja 666', 'yksityinen'"    ,
         }; DatabaseStructureHandler.populateTable(con,
                 "asiakas", asiakasValues
         );
