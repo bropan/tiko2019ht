@@ -20,6 +20,12 @@ public abstract class DatabaseStructureHandler {
     }
 
     public static void createAndSwitchToSchema(Connection con, String schemaName) throws SQLException{
+
+        System.out.println("Setting role to " + Main.GLOBAL_SCHEMA_OWNER);
+        Statement setRole = con.createStatement();
+        setRole.executeUpdate("SET ROLE " + Main.GLOBAL_SCHEMA_OWNER);
+        setRole.close();
+
         Statement schemaCheck = con.createStatement();
         ResultSet schemaResult = schemaCheck.executeQuery("SELECT schema_name FROM information_schema.schemata WHERE schema_name = '" + schemaName + "'");
         boolean foundSchema = schemaResult.next();
