@@ -141,41 +141,41 @@ public class DatabaseCreator {
         System.out.println("Populating empty tables...");
 
         String[] asiakasValues = {
-            "1, 'Matti Virtanen','yksityinen'"    ,
-            "2, 'Esko Meikäläinen ','yksityinen'" ,
-            "3, 'Tauno Salonen ','yksityinen'"    ,
+            "DEFAULT, 'Matti Virtanen','yksityinen'"    ,
+            "DEFAULT, 'Esko Meikäläinen ','yksityinen'" ,
+            "DEFAULT, 'Tauno Salonen ','yksityinen'"    ,
         }; DatabaseStructureHandler.populateTable(con,
                 "asiakas", asiakasValues
         );
 
         String[] tyokohdeValues = {
-            "1, 'peltotie 1', 'asunto'"           ,
-            "2, 'metsatie 2', 'kesamokki'"        ,
-            "3, 'mokkitie 3', 'kesamokki'"        ,
+            "DEFAULT, 'peltotie 1', 'asunto'"           ,
+            "DEFAULT, 'metsatie 2', 'kesamokki'"        ,
+            "DEFAULT, 'mokkitie 3', 'kesamokki'"        ,
         }; DatabaseStructureHandler.populateTable(con,
                 "tyokohde", tyokohdeValues
         );
 
         String[] laskutettavaValues = {
-            "1, 'tyo', 'h', 'tyo', NULL, 15",
-            "2, 'pistorasia', 'kpl', 'tarvike', 100, 5",
-            "3, 'sahkojohto', 'm', 'tarvike', 1000, 1",
+            "DEFAULT, 'tyo', 'h', 'tyo', NULL, 15",
+            "DEFAULT, 'pistorasia', 'kpl', 'tarvike', 100, 5",
+            "DEFAULT, 'sahkojohto', 'm', 'tarvike', 1000, 1",
         }; DatabaseStructureHandler.populateTable(con,
                 "laskutettava", laskutettavaValues
         );
 
         String[] sopimusValues = {
-            "1, 'tuntipalkka', 'sopimus', 1 "  , 
-            "2, 'urakka', 'tarjous', 2 "      , 
-            "3, 'urakka', 'suunnitelma', 3 "  ,  
+            "DEFAULT, 'tuntipalkka', 'sopimus', 1 "  , 
+            "DEFAULT, 'urakka', 'tarjous', 2 "      , 
+            "DEFAULT, 'urakka', 'suunnitelma', 3 "  ,  
         }; DatabaseStructureHandler.populateTable(con,
                 "sopimus", sopimusValues
         );
 
         String[] tyosuoritusValues = {
-            "1, 1, 1",
-            "2, 1, 1",
-            "3, 1, 1",
+            "DEFAULT, 1, 1",
+            "DEFAULT, 1, 1",
+            "DEFAULT, 1, 1",
         }; DatabaseStructureHandler.populateTable(con,
                 "tyosuoritus", tyosuoritusValues
         );
@@ -197,7 +197,7 @@ public class DatabaseCreator {
         );
 
         String[] laskuValues = {
-            "1, 1, 'kertamaksu', 'kesken', NULL, NULL, 0, 'maksamatta', NULL, 0, 0", 
+            "DEFAULT, 1, 'kertamaksu', 'kesken', NULL, NULL, 0, 'maksamatta', NULL, 0, 0", 
         }; DatabaseStructureHandler.populateTable(con,
                 "lasku", laskuValues
         );
