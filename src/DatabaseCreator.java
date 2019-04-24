@@ -29,7 +29,7 @@ public class DatabaseCreator {
         );
         DatabaseStructureHandler.checkAndCreateType(
             "sopimus_tila",
-                "'suunnitelma','tarjous','sopimus'"
+                "'suunnitelma','tarjous','sopimus','valmis'"
         );
         DatabaseStructureHandler.checkAndCreateType(
             "lasku_tyyppi",
