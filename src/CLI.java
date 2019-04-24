@@ -151,15 +151,15 @@ public class CLI {
 
     public static LoginCredentials loginFromUserInput(Scanner userInput){
         LoginCredentials lc = null;
-        String username = CLI.askUser("Enter username: ", userInput);
-        String password = CLI.askUser("Enter password: ", userInput);
+        String username = Utils.askUser("Enter username: ", userInput);
+        String password = Utils.askUser("Enter password: ", userInput);
         lc = new LoginCredentials(username,password);
         return lc;
     }
 
     private static void writeCredentialsToFile(Scanner userInput, String loginConfigFilePath){
         LoginCredentials lc = loginFromUserInput(userInput);
-        boolean save = CLI.askYesOrNo(
+        boolean save = Utils.askYesOrNo(
                 "Do you want to enter the used login credentials to '" + loginConfigFilePath + "' (Y/N)",
                 userInput
                 );
@@ -175,7 +175,7 @@ public class CLI {
     }
 
     private static void resetDatabase(Scanner userInput,Connection con) throws SQLException {
-        boolean confirm = CLI.askYesOrNo(
+        boolean confirm = Utils.askYesOrNo(
                 "WARNING: Do you really want to reset the database? "
                 +"This will remove all entered data and replace it with default data!",
                 userInput
@@ -204,7 +204,7 @@ public class CLI {
         System.out.println();
         getColumns.close();
 
-        if(askYesOrNo("Insert " + valuesAsString + " into " + tableName + "?", userInput)){
+        if(Utils.askYesOrNo("Insert " + valuesAsString + " into " + tableName + "?", userInput)){
             Statement insertValues = con.createStatement();
             insertValues.executeUpdate("INSERT INTO " + tableName + " VALUES (" +valuesAsString+")");
             System.out.println("Inserted " + valuesAsString + " into " + tableName);
@@ -241,7 +241,7 @@ public class CLI {
                 typeStr = "(UNIDENTIFIED CONSTANT" + type + ")";
                 break;
         }
-        String answer = askUser(
+        String answer = Utils.askUser(
 
                 "Enter value for attribute [" + name + "] which is of type " + typeStr + ": "
                 , userInput);
@@ -315,27 +315,27 @@ public class CLI {
     public static void addChargeable(Scanner userInput, Connection con) throws SQLException {
         System.out.println("Adding utility/work that can be charged from the customer");
 
-        String name = askUser("Enter name for the chargeable: ",userInput);
-        String unit = askUser("Enter the unit type (kg,m,kpl etc): ",userInput);
+        String name = Utils.askUser("Enter name for the chargeable: ",userInput);
+        String unit = Utils.askUser("Enter the unit type (kg,m,kpl etc): ",userInput);
         ArrayList<String> types = new ArrayList<>(Arrays.asList(
             "tyo",
             "tarvike"
         ));
         int type = Utils.askSelection("Enter the type: ", types, userInput);
         if(type==-1) return;
-        String wares = askUser("Enter the amount:",userInput);
-        String price = askUser("Enter the price:",userInput);
+        String wares = Utils.askUser("Enter the amount:",userInput);
+        String price = Utils.askUser("Enter the price:",userInput);
         String values = String.format(
                 "DEFAULT,'%s','%s','%s','%s','%s'"
                 ,name,unit,types.get(type),wares,price
                 );
-        askInsertion(userInput,con,"laskutettava",values);
+        Utils.askInsertion(userInput,con,"laskutettava",values);
     }
 
     //Find chargeable by name
     public static int searchChargeable(Scanner userInput, Connection con) throws SQLException {
         int selection = -1;
-        String what = askUser("Enter name of chargeable to search for: ",userInput);
+        String what = Utils.askUser("Enter name of chargeable to search for: ",userInput);
         Statement search = con.createStatement();
         ResultSet rs = search.executeQuery(
                 "SELECT * FROM " + "laskutettava" + " WHERE nimi = '" +what+ "'");
@@ -373,8 +373,8 @@ public class CLI {
 
     public static void addCustomer(Scanner userInput, Connection con) throws SQLException {
         System.out.println("Adding new user");
-        String name = askUser("Enter name: ",userInput);
-        String address = askUser("Enter address: ",userInput);
+        String name = Utils.askUser("Enter name: ",userInput);
+        String address = Utils.askUser("Enter address: ",userInput);
         ArrayList<String> options = new ArrayList<>(Arrays.asList(
             "yksityinen",
             "yrittaja"
@@ -385,12 +385,12 @@ public class CLI {
                 "DEFAULT,'%s','%s','%s'"
                 ,name,address,options.get(type)
                 );
-        askInsertion(userInput,con,"asiakas",values);
+        Utils.askInsertion(userInput,con,"asiakas",values);
     }
 
     public static void addWorksite(Scanner userInput, Connection con) throws SQLException {
         System.out.println("Adding a new worksite");
-        String address = askUser("Enter address: ",userInput);
+        String address = Utils.askUser("Enter address: ",userInput);
         ArrayList<String> options = new ArrayList<>(Arrays.asList(
             "kesamokki",
             "asunto",
@@ -402,40 +402,7 @@ public class CLI {
                 "DEFAULT,'%s','%s'"
                 ,address,options.get(type)
                 );
-        askInsertion(userInput,con,"tyokohde",values);
-    }
-
-    public static void askInsertion(Scanner userInput, Connection con, String tableName, String values) throws SQLException {
-        if( askYesOrNo("Do you want to add the values (" + values + ") into the table " + tableName + "?", userInput) ){
-            Statement insertion = con.createStatement();
-            insertion.executeUpdate("INSERT INTO " + tableName + " VALUES (" +values+ ")");
-            insertion.close();
-            System.out.println("Values (" + values + ") were added to table "+tableName+".");
-        } else {
-            System.out.println("Aborted, no changes made.");
-        }
-    }
-
-    public static String askUser(String question, Scanner s){
-        System.out.print(question);
-        return s.nextLine();
-    }
-
-    public static boolean askYesOrNo(String question, Scanner userInput){
-        System.out.println(question);
-        System.out.print("Enter y for YES, n for NO: ");
-        while(true){
-            switch(userInput.nextLine().toLowerCase()){
-                case "y":
-                case "yes":
-                    return true;
-                case "n":
-                case "no":
-                    return false;
-                default:
-                    System.out.print("Enter y for YES, n for NO: ");
-            }
-        }
+        Utils.askInsertion(userInput,con,"tyokohde",values);
     }
 
 }
