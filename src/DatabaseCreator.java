@@ -160,6 +160,7 @@ public class DatabaseCreator {
 
         String[] laskutettavaValues = {
             "DEFAULT, 'tyo', 'h', 'tyo', NULL, 15",
+            "DEFAULT, 'suunnittelu', 'h', 'tyo', NULL, 10",
             "DEFAULT, 'pistorasia', 'kpl', 'tarvike', 100, 5",
             "DEFAULT, 'sahkojohto', 'm', 'tarvike', 1000, 1",
         }; DatabaseStructureHandler.populateTable(
