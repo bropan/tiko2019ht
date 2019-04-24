@@ -16,9 +16,9 @@ public class Main {
         Connection con = null;
         
         System.out.println();
-        System.out.println("-------------------------------------------------------------------");
-        System.out.println("--- Welcome to Sähkövirma Sähkötärsky ooyy laskutusjärjestelmäm ---");
-        System.out.println("-------------------------------------------------------------------");
+        System.out.println("------------------------------------------------------");
+        System.out.println("--- Welcome to TMI Sähkötärsky billing application ---");
+        System.out.println("------------------------------------------------------");
         System.out.println();
         try {
             //Establishes connection, inits schema,tables,values
