@@ -1,6 +1,8 @@
 import java.util.Scanner;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import java.sql.SQLException;
 import java.sql.Connection;
@@ -130,7 +132,7 @@ public class CLI {
                 "tyosuoritus",
                 "laskutettava"
             ));
-            int answer = askSelection("Select what needs to be added ", addOptions, userInput);
+            int answer = Utils.askSelection("Select what needs to be added ", addOptions, userInput);
             if(answer >= 0){
                 String tableName = addOptions.get(answer);
                 System.out.println("You answered " + tableName);
@@ -248,50 +250,7 @@ public class CLI {
         return "'" + answer + "'";
     }
 
-    public static int askSelection(String question, ArrayList<String> options, Scanner userInput){
-        int selection = -1;
-        System.out.println(question);
-        int optionsLength = options.size();
-        if(question==null||options==null||optionsLength==0||userInput==null){
-            throw new IllegalArgumentException("Invalid parameters for askSelection!");
-        }
 
-        for(int i=0; i < optionsLength; ++i){ //Listing options
-            System.out.println(INDENT + "[" + (i+1) + "] " + options.get(i));
-        }
-        System.out.println(INDENT + "[a] ABORT");
-
-        boolean asking = true;
-        while(asking){
-            System.out.println("Enter choice [1-"+optionsLength+"]: ");
-            String answer = userInput.nextLine();
-            try {
-                int asNumber = Integer.parseInt(answer) - 1;
-                if(asNumber >= 0 && asNumber < optionsLength){
-                    selection = asNumber;
-                    asking = false;
-                } else {
-                    System.out.println("Select a number from range [1-"+optionsLength+"]!");
-                }
-            } catch (NumberFormatException nfe){
-                if(answer.equals("ABORT") || answer.equals("a")){
-                    selection = -1;
-                    asking = false;
-                } else {
-
-                    int search = options.indexOf(answer);
-                    if(search != -1){
-                        selection = search;
-                        asking = false;
-                    } else {
-                        System.out.println("Invalid input, "
-                                +"type a number or the name of the selection!");
-                    }
-                }
-            }
-        }
-        return selection;
-    }
 
     public static void showTable(Scanner userInput, Connection con) throws SQLException {
 
@@ -305,7 +264,7 @@ public class CLI {
             "lasku"
         ));
 
-        int selection = askSelection("Show which table? ", options, userInput);
+        int selection = Utils.askSelection("Show which table? ", options, userInput);
 
         Statement showTable = con.createStatement();
         ResultSet rs = showTable.executeQuery("SELECT * FROM " + options.get(selection));
@@ -342,7 +301,7 @@ public class CLI {
             "add new work/utility",
             "increase existing stock"
         ));
-        int selection = askSelection("What do you want to do?", options, userInput);
+        int selection = Utils.askSelection("What do you want to do?", options, userInput);
         switch(selection){
             case 0:
                 addChargeable(userInput, con);
@@ -362,7 +321,7 @@ public class CLI {
             "tyo",
             "tarvike"
         ));
-        int type = askSelection("Enter the type: ", types, userInput);
+        int type = Utils.askSelection("Enter the type: ", types, userInput);
         if(type==-1) return;
         String wares = askUser("Enter the amount:",userInput);
         String price = askUser("Enter the price:",userInput);
@@ -393,16 +352,17 @@ public class CLI {
         }
         System.out.println();
 
-        ArrayList<String> values = new ArrayList<>();
+        HashMap<Integer,String> valueMap = new HashMap<>();
         while(rs.next()){
+            int id = rs.getInt("laskutettava_id");
             String row = "";
             for(int i=1; i <= columns; i++) {
                 row += String.format("%12.12s| ", rs.getString(i));
             }
-            values.add(row);
+            valueMap.put(id,row);
         }
-        if(values.size() > 0)
-            selection = askSelection("Select result row -------------------- ",values, userInput);
+        if(valueMap.size() > 0)
+            selection = Utils.askSelection("Select result row -------------------- ",valueMap, userInput);
 
         return selection;
     }
@@ -419,7 +379,7 @@ public class CLI {
             "yksityinen",
             "yrittaja"
         ));
-        int type = askSelection("Enter customer type: ", options, userInput);
+        int type = Utils.askSelection("Enter customer type: ", options, userInput);
         if(type==-1) return;
         String values = String.format(
                 "DEFAULT,'%s','%s','%s'"
@@ -436,7 +396,7 @@ public class CLI {
             "asunto",
             "muu"
         ));
-        int type = askSelection("Enter customer type: ", options, userInput);
+        int type = Utils.askSelection("Enter customer type: ", options, userInput);
         if(type==-1) return;
         String values = String.format(
                 "DEFAULT,'%s','%s'"
