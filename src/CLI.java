@@ -19,6 +19,7 @@ public class CLI {
     private final static String ADD_CUSTOMER = "addcustomer";
     private final static String ADD_WORKSITE = "addworksite";
     private final static String CHARGEABLES = "chargeables";
+    private final static String CHECKOUT = "checkout";
     private final static String SHOW_TABLE = "showtable";
     private final static String HELP = "help";
     private final static String WRITE_CREDENTIALS = "createlogin";
@@ -81,8 +82,11 @@ public class CLI {
                 case CHARGEABLES:
                     chargeables(userInput);
                     break;
+                case CHECKOUT:
+                    checkout(userInput);
+                    break;
                 case SHOW_TABLE:
-                    showTable(userInput);
+                    showTableInteractive(userInput);
                     break;
                 case WRITE_CREDENTIALS:
                     writeCredentialsToFile(userInput, Main.LOGIN_CONFIG_FILE_PATH);
@@ -114,6 +118,8 @@ public class CLI {
                 ADD_WORKSITE + " - Add a new worksite interactively"
                 + "\n" +
                 CHARGEABLES + " - Add utility/work types or change their stock amount"
+                + "\n" +
+                CHECKOUT + " - Checkout work done and utilities used"
                 + "\n" +
                 SHOW_TABLE + " - Show data about customers/worksites/bills etc."
                 + "\n" +
@@ -259,7 +265,7 @@ public class CLI {
 
 
 
-    public static void showTable(Scanner userInput ) throws SQLException {
+    public static void showTableInteractive(Scanner userInput) throws SQLException {
 
         ArrayList<String> options = new ArrayList<>(Arrays.asList(
             "asiakas",
@@ -272,9 +278,16 @@ public class CLI {
         ));
 
         int selection = Utils.askSelection("Show which table? ", options, userInput);
+        if(selection>=0){
+            showTable(options.get(selection));
+        } else {
+            System.out.println("Aborted showtable");
+        }
+    }
 
+    public static void showTable(String tableName) throws SQLException {
         Statement showTable = Global.dbConnection.createStatement();
-        ResultSet rs = showTable.executeQuery("SELECT * FROM " + options.get(selection));
+        ResultSet rs = showTable.executeQuery("SELECT * FROM " + tableName);
         ResultSetMetaData rsmd = rs.getMetaData();
 
         int columns = rsmd.getColumnCount();
@@ -375,6 +388,84 @@ public class CLI {
             selection = Utils.askSelection("Select result row -------------------- ",valueMap, userInput);
 
         return selection;
+    }
+
+    public static void checkout(Scanner userInput) throws SQLException {
+        final String SET_WORKSITE = "set worksite";
+        final String SET_CONTRACT = "set contract";
+        final String ADD_UTILITY = "add utility or work";
+        final String CHECKOUT_DONE = "done";
+        final String CHECKOUT_ABORT = "abort";
+        System.out.println("Checking out work/utilities used today.");
+        System.out.println("Make sure that the worksite has been created, "+
+                "and that the utilities/work have been entered into the system.");
+
+        int workSiteId = -1;
+        int contractId = -1;
+        String workSiteAddress = "";
+        String utilities = "";
+        boolean checkingOut = true;
+        while(checkingOut){
+            System.out.println("Worksite selected: { "+workSiteAddress+" }");
+            System.out.println("Contract selected: ["+contractId+"]");
+            System.out.println("Utility/work to be added {\n" + utilities + "\n}");
+            ArrayList<String> actions = new ArrayList<>(
+                Arrays.asList(
+                    SET_WORKSITE,
+                    SET_CONTRACT,
+                    ADD_UTILITY,
+                    CHECKOUT_DONE,
+                    CHECKOUT_ABORT
+                )
+            );
+            int action = Utils.askSelection("Select action: ", actions, userInput);
+            try {
+                String answer = "";
+                int selected = -1;
+                switch(actions.get(action)){
+                    case SET_WORKSITE:
+                        showTable("tyokohde");
+                        answer = Utils.askUser("Type worksite id: ", userInput);
+                        selected = Integer.parseInt(answer);
+                        Statement getWorksite = Global.dbConnection.createStatement();
+                        ResultSet wsrs = getWorksite.executeQuery("SELECT * FROM tyokohde "+
+                                "WHERE kohde_id = "+selected);
+                        if(wsrs.next()){
+                            workSiteId = wsrs.getInt("kohde_id");
+                            workSiteAddress = wsrs.getString("osoite");
+                        } else {
+                            System.out.println("Not found!");
+                        }
+                        getWorksite.close();
+                        break;
+                    case SET_CONTRACT:
+                        showTable("sopimus");
+                        answer = Utils.askUser("Type contract id: ", userInput);
+                        selected = Integer.parseInt(answer);
+                        Statement getContract = Global.dbConnection.createStatement();
+                        ResultSet crs = getContract.executeQuery("SELECT * FROM sopimus "+
+                                "WHERE sopimus_id = "+selected);
+                        if(crs.next()){
+                            contractId = crs.getInt("sopimus_id");
+                        } else {
+                            System.out.println("Not found!");
+                        }
+                        getContract.close();
+                        break;
+                    case ADD_UTILITY:
+                        break;
+                    case CHECKOUT_DONE:
+                        break;
+                    case CHECKOUT_ABORT:
+                        break;
+                    default:
+                        System.out.println("Unidentified action!");
+                        break;
+                }
+            } catch (NumberFormatException nfe){
+                System.out.println("Enter a number!");
+            }
+        }
     }
 
     public static void changeChargeableWares(Scanner userInput, int id) throws SQLException {
