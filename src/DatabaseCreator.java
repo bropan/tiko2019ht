@@ -172,7 +172,7 @@ public class DatabaseCreator {
         );
 
         String[] sopimusValues = {
-            "DEFAULT, 'tuntipalkka', 'sopimus', 1 "  , 
+            "DEFAULT, 'tuntipalkka', 'valmis', 1 "  , 
             "DEFAULT, 'urakka', 'tarjous', 2 "      , 
             "DEFAULT, 'urakka', 'suunnitelma', 3 "  ,  
         }; DatabaseStructureHandler.populateTable(
