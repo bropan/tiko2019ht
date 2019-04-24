@@ -206,7 +206,7 @@ public class DatabaseCreator {
         );
 
         String[] laskuValues = {
-            "DEFAULT, 1, 'kertamaksu', 'kesken', NULL, NULL, 0, 'maksamatta', NULL, 0, 0", 
+            "DEFAULT, 1, 'kertamaksu', 'valmis', '2019-04-23', '2019-06-01', 0, 'maksamatta', NULL, 0, 0, NULL", 
         }; DatabaseStructureHandler.populateTable(
                 "lasku", laskuValues
         );
