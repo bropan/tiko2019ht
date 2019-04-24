@@ -47,6 +47,10 @@ public class CLI {
                 System.out.println();
                 continueRunning = commandHandler(command,userInput);
                 Global.dbConnection.commit();
+            } catch (SQLException e) {
+                System.out.println("Unexpected SQLException happened in the user interface: " + e.getMessage());
+                Global.dbConnection.rollback();
+                System.out.println("Rolled back, no changes made to database.");
             } catch (Exception e) {
                 System.out.println("Unexpected exception happened in the user interface: " + e.getMessage());
                 e.printStackTrace();
@@ -109,7 +113,7 @@ public class CLI {
                 + "\n" +
                 ADD_WORKSITE + " - Add a new worksite interactively"
                 + "\n" +
-                CHARGEABLES + " - Add utility/work types or increase their stock amount"
+                CHARGEABLES + " - Add utility/work types or change their stock amount"
                 + "\n" +
                 SHOW_TABLE + " - Show data about customers/worksites/bills etc."
                 + "\n" +
@@ -302,7 +306,7 @@ public class CLI {
 
         ArrayList<String> options = new ArrayList<>(Arrays.asList(
             "add new work/utility",
-            "increase existing stock"
+            "change stock"
         ));
         int selection = Utils.askSelection("What do you want to do?", options, userInput);
         switch(selection){
@@ -310,7 +314,10 @@ public class CLI {
                 addChargeable(userInput);
                 break;
             case 1:
-                searchChargeable(userInput);
+                int id = searchChargeable(userInput);
+                if(id>0){
+                    changeChargeableWares(userInput,id);
+                }
                 break;
         }
     }
@@ -370,8 +377,14 @@ public class CLI {
         return selection;
     }
 
-    public static void increaseChargeableWares(Scanner userInput ) throws SQLException {
-
+    public static void changeChargeableWares(Scanner userInput, int id) throws SQLException {
+        String answer = Utils.askUser("Set wares to: ",userInput);
+        Statement st = Global.dbConnection.createStatement();
+        st.executeUpdate(
+                "UPDATE laskutettava SET varastotilanne = '"+answer+"'"+
+                " WHERE laskutettava_id = "+id);
+        st.close();
+        System.out.println("Chargeable id[" + id + "] wares set to " + answer + ".");
     }
 
     public static void addCustomer(Scanner userInput ) throws SQLException {

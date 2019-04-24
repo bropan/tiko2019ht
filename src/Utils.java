@@ -107,7 +107,7 @@ public class Utils {
             System.out.println("Enter choice: ");
             String answer = userInput.nextLine();
             try {
-                int asNumber = Integer.parseInt(answer) - 1;
+                int asNumber = Integer.parseInt(answer);
                 if(options.get(asNumber) != null){
                     selection = asNumber;
                     asking = false;
