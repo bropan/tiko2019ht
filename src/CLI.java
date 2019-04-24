@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import java.math.BigDecimal;
+
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.sql.Statement;
@@ -15,13 +17,15 @@ import java.io.PrintWriter;
 import java.io.IOException;
 public class CLI {
     private final static String QUIT = "quit";
+    private final static String HELP = "help";
+    private final static String REPORT_ONE = "r1";
+    private final static String REPORT_TWO = "r2";
     private final static String ADD = "add";
     private final static String ADD_CUSTOMER = "addcustomer";
     private final static String ADD_WORKSITE = "addworksite";
     private final static String CHARGEABLES = "chargeables";
     private final static String CHECKOUT = "checkout";
     private final static String SHOW_TABLE = "showtable";
-    private final static String HELP = "help";
     private final static String WRITE_CREDENTIALS = "createlogin";
     private final static String RESET_DATABASE = "resetdatabase";
 
@@ -34,6 +38,8 @@ public class CLI {
         System.out.println("Launching Sähkötärsky user interface.");
         System.out.println("Enter " + HELP + " for list of available commands.");
         System.out.println("");
+
+
 
         boolean continueRunning = true;
         while(continueRunning){
@@ -69,6 +75,12 @@ public class CLI {
             switch(command){
                 case QUIT:
                     continueRunning = false;
+                    break;
+                case REPORT_ONE:
+                    reportOne();
+                    break;
+                case REPORT_TWO:
+                    System.out.println("not implemented");
                     break;
                 case ADD:
                     addInteractive(userInput);
@@ -111,6 +123,10 @@ public class CLI {
 
                 QUIT + " - Exit program"
                 + "\n" +
+                REPORT_ONE + " - Print and write report one."
+                + "\n" +
+                REPORT_TWO + " - Print and write report two."
+                + "\n" +
                 ADD + " - Add something (works badly)"
                 + "\n" +
                 ADD_CUSTOMER + " - Add new customer interactively"
@@ -132,6 +148,41 @@ public class CLI {
 
                 "----- Commands -----" + "\n\n" 
         );
+    }
+
+    public static void reportOne() throws SQLException {
+        final String fileName = "raportti_1.txt";
+        System.out.println("Creating report 1");
+        System.out.println("");
+        String[] r1items = {
+            "suunnittelu",
+            "asennus",
+            "sahkojohto",
+            "pistorasia",
+        };
+
+        int[] r1counts = {
+            3,
+            12,
+            3,
+            1
+        };
+        String estimate = priceEstimate(r1items,r1counts);
+        if(estimate != null){
+            System.out.println(estimate);
+            System.out.println("Writing to file " + fileName + "...");
+            try {
+                PrintWriter pw = new PrintWriter(fileName);
+                pw.println(estimate);
+                pw.close();
+                System.out.println("File written. Report created.");
+            } catch (Exception e){
+                System.out.println("Error when writing " + fileName + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Report creation failed.");
+        }
     }
 
     public static void addInteractive(Scanner userInput) throws SQLException {
@@ -180,6 +231,7 @@ public class CLI {
             try (PrintWriter pw = new PrintWriter(loginConfigFilePath)){
                 pw.println("username;" + lc.username);
                 pw.println("password;" + lc.password);
+                pw.close();
                 System.out.println("Login configuration written to '" + loginConfigFilePath + "'.");
             } catch (IOException e) {
                 System.out.println("IOException while saving credentials: " + e.getMessage());
@@ -528,6 +580,56 @@ public class CLI {
                 System.out.println("---- ERROR: " + iae.getMessage() +"----");
             }
         }
+    }
+
+    public static String priceEstimate(String[] chargeables, int[] counts) throws SQLException {
+        String estimate = "";
+        estimate += String.format("%12.12s#%12.12s#%12.12s\n", 
+                "##################","##################","##################");
+        estimate += "HINTA-ARVIO KOHTEELLE X\n";
+
+        estimate += String.format("%12.12s#%12.12s#%12.12s\n", 
+                "##################","##################","##################");
+        estimate += "\n";
+        estimate += String.format("%12.12s|%12.12s|%12.12s\n", "Tuotenimi", "Hinta", "Määrä");
+        estimate += String.format("%12.12s+%12.12s+%12.12s\n", 
+                "----------------", "-----------------", "-----------------");
+        BigDecimal totalPrice = new BigDecimal(0);
+        for(int i=0; i < chargeables.length; ++i){
+            String s = chargeables[i];
+            int count = counts[i];
+            Statement st = Global.dbConnection.createStatement();
+            ResultSet rs = st.executeQuery(
+                    "SELECT nimi, yksikko, MIN(sisaanostohinta) as hinta " +
+                    "FROM laskutettava "+
+                    "WHERE nimi = '" + s + "' "+
+                    "AND " +
+                    "( " +
+                    "(varastotilanne IS NOT null AND varastotilanne - "+count+" > 0) " +
+                    "OR " +
+                    "tyyppi = 'tyo'" +
+                    ") " +
+                    "GROUP BY nimi, yksikko"
+            );
+            if(rs.next()){
+                BigDecimal price = rs.getBigDecimal("hinta");
+                price = price.multiply(new BigDecimal(Global.priceMultiplier));
+                String name = rs.getString("nimi");
+                String unit = rs.getString("yksikko");
+                String countStr = count + unit;
+                estimate += String.format("%12.12s|%12.12s|%12.12s\n", name, price, countStr);
+                totalPrice = totalPrice.add(price);
+            } else {
+                System.out.println("Could not find suitable item " + s + " when making price estimation!");
+                return null;
+            }
+        }
+        estimate += String.format("%12.12s-%12.12s-%12.12s\n", 
+                "----------------", "-----------------", "-----------------------");
+        estimate += String.format("%12.12s %12.12s\n","Yhteensä:",totalPrice);
+        estimate += String.format("%12.12s-%12.12s-%12.12s\n",
+                "----------------", "-----------------", "-----------------------");
+        return estimate;
     }
 
     public static void showCustomQuery(String query) throws SQLException {
