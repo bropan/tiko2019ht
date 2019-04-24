@@ -286,33 +286,8 @@ public class CLI {
     }
 
     public static void showTable(String tableName) throws SQLException {
-        Statement showTable = Global.dbConnection.createStatement();
-        ResultSet rs = showTable.executeQuery("SELECT * FROM " + tableName);
-        ResultSetMetaData rsmd = rs.getMetaData();
+        showCustomQuery("SELECT * FROM " + tableName);
 
-        int columns = rsmd.getColumnCount();
-
-        for(int i=1; i <= columns; i++) {
-            String name = null;
-            name = String.format("%12.12s| ", rsmd.getColumnName(i));
-            System.out.print(name);
-        }
-
-        System.out.println();
-
-        for(int i=1; i<= columns; i++) {
-            System.out.print("-------------");
-        }
-
-        System.out.println();
-
-        while (rs.next()) {
-            String dataRow = "";
-            for(int i=1; i <= columns; i++){
-                dataRow += String.format("%12.12s| ", rs.getString(i));
-            }
-            System.out.println(dataRow);
-        }
     }
 
     public static void chargeables(Scanner userInput ) throws SQLException {
@@ -328,7 +303,7 @@ public class CLI {
                 break;
             case 1:
                 int id = searchChargeable(userInput);
-                if(id>0){
+                if(id>=0){
                     changeChargeableWares(userInput,id);
                 }
                 break;
@@ -391,34 +366,65 @@ public class CLI {
     }
 
     public static void checkout(Scanner userInput) throws SQLException {
-        final String SET_WORKSITE = "set worksite";
-        final String SET_CONTRACT = "set contract";
-        final String ADD_UTILITY = "add utility or work";
-        final String CHECKOUT_DONE = "done";
-        final String CHECKOUT_ABORT = "abort";
+        final String SET_WORKSITE = "set worksite worked on today";
+        final String SET_CONTRACT = "set contract this work was related to";
+        final String ADD_UTILITY_SEARCH = "add utility or work with name search";
+        final String ADD_UTILITY_ID = "add utility or work by id";
+        final String CHECKOUT_DONE = "done, save reported work permanently";
         System.out.println("Checking out work/utilities used today.");
         System.out.println("Make sure that the worksite has been created, "+
                 "and that the utilities/work have been entered into the system.");
 
+        Statement createWork = Global.dbConnection.createStatement();
+        createWork.executeUpdate("INSERT INTO tyosuoritus VALUES (" +
+                    String.format("DEFAULT,NULL,NULL") +
+                    ")"
+        );
+        createWork.close();
+
+
+        Statement getWorkId = Global.dbConnection.createStatement();
+        ResultSet getWorkIdResult = getWorkId.executeQuery(
+                "SELECT MAX(tyosuoritus_id) as id FROM tyosuoritus"
+        );
+        getWorkIdResult.next();
+        int workId = getWorkIdResult.getInt("id");
+
         int workSiteId = -1;
         int contractId = -1;
         String workSiteAddress = "";
-        String utilities = "";
         boolean checkingOut = true;
         while(checkingOut){
+            int utilityId = -1;
+            System.out.println();
+            
+            System.out.println("############## Utilities to be added ###################");
+            System.out.println("#                                                      #");
+            showCustomQuery(
+                    "SELECT s.laskutettava_id, l.nimi, s.lkm, s.alennus " +
+                    "FROM " +
+                    "laskutettava as l INNER JOIN sisaltaa as s " +
+                    "ON l.laskutettava_id = s.laskutettava_id " +
+                    "WHERE tyosuoritus_id = " + workId
+            );
+            System.out.println("#                                                      #");
+            System.out.println("########################################################");
+
             System.out.println("Worksite selected: { "+workSiteAddress+" }");
             System.out.println("Contract selected: ["+contractId+"]");
-            System.out.println("Utility/work to be added {\n" + utilities + "\n}");
             ArrayList<String> actions = new ArrayList<>(
                 Arrays.asList(
                     SET_WORKSITE,
                     SET_CONTRACT,
-                    ADD_UTILITY,
-                    CHECKOUT_DONE,
-                    CHECKOUT_ABORT
+                    ADD_UTILITY_SEARCH,
+                    ADD_UTILITY_ID,
+                    CHECKOUT_DONE
                 )
             );
             int action = Utils.askSelection("Select action: ", actions, userInput);
+            if(action < 0){
+                throw new IllegalArgumentException("Checkout aborted by user.");
+            }
             try {
                 String answer = "";
                 int selected = -1;
@@ -439,33 +445,162 @@ public class CLI {
                         getWorksite.close();
                         break;
                     case SET_CONTRACT:
-                        showTable("sopimus");
+                        showCustomQuery(
+                                "SELECT sopimus.*, asiakas.nimi as asiakasnimi " +
+                                "FROM asiakas INNER JOIN sopimus " +
+                                "ON asiakas.asiakas_id = sopimus.asiakas_id "
+                                );
                         answer = Utils.askUser("Type contract id: ", userInput);
                         selected = Integer.parseInt(answer);
                         Statement getContract = Global.dbConnection.createStatement();
-                        ResultSet crs = getContract.executeQuery("SELECT * FROM sopimus "+
+                        ResultSet cors = getContract.executeQuery("SELECT * FROM sopimus "+
                                 "WHERE sopimus_id = "+selected);
-                        if(crs.next()){
-                            contractId = crs.getInt("sopimus_id");
+                        if(cors.next()){
+                            contractId = cors.getInt("sopimus_id");
                         } else {
                             System.out.println("Not found!");
                         }
                         getContract.close();
                         break;
-                    case ADD_UTILITY:
+                    case ADD_UTILITY_SEARCH: //utilityId handled later in this function
+                        utilityId = searchChargeable(userInput);
+                        break;
+                    case ADD_UTILITY_ID: //utilityId handled later in this function
+                        showTable("laskutettava");
+                        answer = Utils.askUser("Type chargeable utility id: ", userInput);
+                        selected = Integer.parseInt(answer);
+                        Statement getChargeable = Global.dbConnection.createStatement();
+                        ResultSet chrs = getChargeable.executeQuery("SELECT * FROM laskutettava "+
+                                "WHERE laskutettava_id = "+selected);
+                        if(chrs.next()){
+                            utilityId = chrs.getInt("laskutettava_id");
+                        } else {
+                            System.out.println("Not found!");
+                        }
+                        getChargeable.close();
                         break;
                     case CHECKOUT_DONE:
-                        break;
-                    case CHECKOUT_ABORT:
+                        System.out.println("Making sure worksite and contract id is right...");
+                        if(workSiteId < 0) throw new IllegalArgumentException("Invalid worksiteId!");
+                        if(contractId < 0) throw new IllegalArgumentException("Invalid contractId!");
+                        System.out.println("You are going to add the above items/work permanently to a bill.");
+                        if(Utils.askYesOrNo("Confirm?", userInput)){
+                            Statement updateWork = Global.dbConnection.createStatement();
+                            updateWork.executeUpdate(
+                                "UPDATE tyosuoritus SET sopimus_id = "+contractId+" WHERE tyosuoritus_id = "+workId
+                            );
+                            updateWork.executeUpdate(
+                                "UPDATE tyosuoritus SET kohde_id = "+workSiteId+" WHERE tyosuoritus_id = "+workId
+                            );
+                            System.out.println("Work has been checked out succesfully.");
+                            checkingOut = false;
+                        }
                         break;
                     default:
                         System.out.println("Unidentified action!");
                         break;
                 }
+                if(utilityId > 0){
+                    int amount = Integer.parseInt(Utils.askUser(
+                                "Enter amount of work/utility to be added: ",userInput));
+                    Statement getAmount = Global.dbConnection.createStatement();
+                    ResultSet utrs = getAmount.executeQuery(
+                            "SELECT varastotilanne FROM laskutettava "+
+                            "WHERE laskutettava_id = " +utilityId);
+                    utrs.next();
+                    int stock = utrs.getInt("varastotilanne");
+                    if(!utrs.wasNull() && stock - amount < 0){
+                        throw new IllegalArgumentException(
+                                "Not enough of utility in stock! " +stock+"-"+amount+"="+(stock - amount));
+                    }
+                    Double discount = Double.parseDouble(Utils.askUser(
+                                "Enter discount for this utility from range [0-1]: ",userInput));
+                    if(discount < 0 || discount > 1){
+                        throw new IllegalArgumentException(
+                                "Discount: Enter a value from range [0-1]");
+                    }
+                    addUtilityToWork(workId, utilityId, amount, discount);
+                    getAmount.close();
+                }
             } catch (NumberFormatException nfe){
                 System.out.println("Enter a number!");
+            } catch (IllegalArgumentException iae){
+                System.out.println("---- ERROR: " + iae.getMessage() +"----");
             }
         }
+    }
+
+    public static void showCustomQuery(String query) throws SQLException {
+        try {
+            Statement getQuery = Global.dbConnection.createStatement();
+            ResultSet rs = getQuery.executeQuery(query);
+            if(rs.next()){
+                ResultSetMetaData rsmd = rs.getMetaData();
+
+                int columns = rsmd.getColumnCount();
+
+                for(int i=1; i <= columns; i++) {
+                    String name = null;
+                    name = String.format("%12.12s| ", rsmd.getColumnName(i));
+                    System.out.print(name);
+                }
+
+                System.out.println();
+
+                for(int i=1; i<= columns; i++) {
+                    System.out.print("-------------");
+                }
+
+                System.out.println();
+
+                do {
+                    String dataRow = "";
+                    for(int i=1; i <= columns; i++){
+                        dataRow += String.format("%12.12s| ", rs.getString(i));
+                    }
+                    System.out.println(dataRow);
+                } while (rs.next());
+            }
+            getQuery.close();
+        } catch (SQLException e){
+            System.out.println("SQLException while processing this query:");
+            System.out.println(query);
+            System.out.println("Exception: " + e.getMessage());
+        }
+    }
+
+    //returns success
+    public static boolean addUtilityToWork(int workId, int utilityId, int amount, double discount) throws SQLException {
+        boolean success = false;
+        Statement getAmount = Global.dbConnection.createStatement();
+        ResultSet rs = getAmount.executeQuery(
+                "SELECT varastotilanne FROM laskutettava "+
+                "WHERE laskutettava_id = " +utilityId);
+        rs.next();
+        int stock = rs.getInt("varastotilanne");
+        if(!rs.wasNull() && stock - amount < 0){
+            throw new IllegalArgumentException(
+                    "Not enough of utility in stock! " +stock+"-"+amount+"="+ (stock-amount) );
+        }
+
+        getAmount.close();
+
+        Statement updateStock = Global.dbConnection.createStatement();
+        updateStock.executeUpdate(
+                "UPDATE laskutettava "+
+                "SET varastotilanne = varastotilanne - "+amount+" "+
+                "WHERE laskutettava_id = " + utilityId + " "
+                );
+        updateStock.close();
+
+        Statement addWorkContent = Global.dbConnection.createStatement();
+        addWorkContent.executeUpdate(
+                "INSERT INTO sisaltaa VALUES(" +
+                String.format("'%s','%s',%d,%f",workId,utilityId,amount,discount) +
+                ")"
+                );
+
+        return success;
     }
 
     public static void changeChargeableWares(Scanner userInput, int id) throws SQLException {
