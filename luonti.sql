@@ -23,7 +23,7 @@ CREATE TABLE laskutettava (
     yksikko VARCHAR(64), 
     tyyppi laskutettava_tyyppi, 
     varastotilanne INT, 
-    sisaanostohinta NUMERIC(2), 
+    sisaanostohinta NUMERIC(2),
     PRIMARY KEY(laskutettava_id) 
 ); 
 
@@ -74,6 +74,8 @@ CREATE TABLE lasku (
     maksupvm DATE, 
     era INT, 
     erat INT, 
+    edellinen INT,
     FOREIGN KEY (sopimus_id) REFERENCES sopimus(sopimus_id), 
+    FOREIGN KEY (edellinen) REFERENCES lasku(lasku_id),
     PRIMARY KEY(lasku_id) 
 ); 

@@ -131,6 +131,7 @@ public class DatabaseCreator {
             "maksupvm DATE,                                                         "+
             "era INT,                                                               "+
             "erat INT,                                                              "+
+            "edellinen INT,                                                         "+
             "FOREIGN KEY (sopimus_id) REFERENCES sopimus(sopimus_id),               "+
             "PRIMARY KEY(lasku_id)                                                  "+
             ""
