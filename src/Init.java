@@ -26,8 +26,8 @@ public class Init {
     private Init(){
     }
 
-    public static Connection init(Scanner userInput) throws SQLException{        
-        Connection con = null;
+    public static void init(Scanner userInput) throws SQLException{        
+        Global.dbConnection = null;
         boolean attemptingConnect = true;
         boolean lastTimeFailed = false;
 
@@ -46,7 +46,7 @@ public class Init {
 
                 String connectionTarget = PROTOCOL+"//"+SERVER+":"+ PORT+"/"+DATABASE;
                 System.out.println("Establishing connection to: " + connectionTarget);
-                con = DriverManager.getConnection(connectionTarget,username,password);
+                Global.dbConnection = DriverManager.getConnection(connectionTarget,username,password);
             } catch (SQLException e){
                 System.out.println("SQLException occurred: " + e.getMessage());
                 lastTimeFailed = true;
@@ -54,27 +54,26 @@ public class Init {
                 System.out.println(INIT_SEPARATOR_END);
             }
 
-            if(con != null){
+            if(Global.dbConnection != null){
                 attemptingConnect = false;
                 System.out.println("Connected succesfully.");
             }
         }
 
         try {
-            con.setAutoCommit(false);
-            DatabaseStructureHandler.initDefaultStructure(con,Main.GLOBAL_SCHEMA);
-            con.commit();
+            Global.dbConnection.setAutoCommit(false);
+            DatabaseStructureHandler.initDefaultStructure(Main.GLOBAL_SCHEMA);
+            Global.dbConnection.commit();
         } catch (SQLException e){
             System.out.println("Exception in database structure checking/creation: " + e.getMessage());
-            con.rollback();
+            Global.dbConnection.rollback();
             System.out.println("Rolled back!");
             throw e;
         } finally {
-            con.setAutoCommit(true);
+            Global.dbConnection.setAutoCommit(true);
         }
 
         System.out.println(INIT_SEPARATOR_END);
-        return con;
     }
 
     private static LoginCredentials getCredentials(Scanner userInput, boolean lastTimeFailed){

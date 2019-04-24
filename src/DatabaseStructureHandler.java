@@ -1,4 +1,3 @@
-import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,65 +7,65 @@ public abstract class DatabaseStructureHandler {
 
     private DatabaseStructureHandler (){}
 
-    public static void initDefaultStructure(Connection con, String schemaName) throws SQLException {
+    public static void initDefaultStructure(String schemaName) throws SQLException {
         System.out.println("Managing default database structure...");
 
-        DatabaseStructureHandler.createAndSwitchToSchema(con,schemaName);
-        DatabaseStructureHandler.createTypesIfAbsent(con);
-        DatabaseStructureHandler.createTablesIfAbsent(con,schemaName);
-        DatabaseStructureHandler.createContentIfAbsent(con);
+        DatabaseStructureHandler.createAndSwitchToSchema(schemaName);
+        DatabaseStructureHandler.createTypesIfAbsent();
+        DatabaseStructureHandler.createTablesIfAbsent(schemaName);
+        DatabaseStructureHandler.createContentIfAbsent();
 
         System.out.println("Database default structure initialized. Types, tables and values have been assured/created.");
     }
 
-    public static void createAndSwitchToSchema(Connection con, String schemaName) throws SQLException{
+    public static void createAndSwitchToSchema(String schemaName) throws SQLException{
 
         System.out.println("Setting role to " + Main.GLOBAL_SCHEMA_OWNER);
-        Statement setRole = con.createStatement();
+        Statement setRole = Global.dbConnection.createStatement();
         setRole.executeUpdate("SET ROLE " + Main.GLOBAL_SCHEMA_OWNER);
         setRole.close();
 
-        Statement schemaCheck = con.createStatement();
+        Statement schemaCheck = Global.dbConnection.createStatement();
         ResultSet schemaResult = schemaCheck.executeQuery("SELECT schema_name FROM information_schema.schemata WHERE schema_name = '" + schemaName + "'");
         boolean foundSchema = schemaResult.next();
         schemaCheck.close();
         
         if(!foundSchema){
             System.out.println("Schema not found, creating schema with name " + schemaName);
-            Statement newSchema = con.createStatement();
+            Statement newSchema = Global.dbConnection.createStatement();
             newSchema.executeUpdate(
                     "CREATE SCHEMA " + schemaName + " AUTHORIZATION " + Main.GLOBAL_SCHEMA_OWNER);
             newSchema.close();
         }
 
-        Statement changeSchema = con.createStatement();
+        Statement changeSchema = Global.dbConnection.createStatement();
         changeSchema.executeUpdate("SET search_path TO " + schemaName);
         changeSchema.close();
     }
 
     //Removes everything and sets database to default structure
-    public static void resetDatabase(Connection con, String schemaName) throws SQLException{
+    public static void resetDatabase(String schemaName) throws SQLException{
         System.out.println("Resetting database!");
-        Statement removeSchema = con.createStatement();
+        Statement removeSchema = Global.dbConnection.createStatement();
         removeSchema.executeUpdate("DROP SCHEMA "+schemaName+" CASCADE");
         removeSchema.close();
         
-        initDefaultStructure(con,schemaName);
+        initDefaultStructure(schemaName);
     }
 
     //Creates ENUM types required by the database if they don't exist
-    public static void createTypesIfAbsent(Connection con) throws SQLException {
-        DatabaseCreator.createTypesIfAbsent(con);
+    public static void createTypesIfAbsent()throws SQLException {
+        DatabaseCreator.createTypesIfAbsent();
     }
 
     //Checks if all tables defined in this method exist and creates them if they don't
-    public static void createTablesIfAbsent(Connection con, String schemaName) throws SQLException {
-        DatabaseCreator.createTablesIfAbsent(con, schemaName);
+    public static void createTablesIfAbsent(String schemaName) throws SQLException {
+        DatabaseCreator.createTablesIfAbsent(schemaName);
     }
 
-    public static void checkAndCreateTable(Connection con, String schemaName, String tableName, String content) throws SQLException {	
+    public static void checkAndCreateTable(String schemaName, String tableName, String content) throws SQLException {	
         try {
-            Statement tableCheck = con.createStatement();
+            Statement tableCheck = Global.dbConnection.createStatement();
             ResultSet tableResult = tableCheck.executeQuery(
                     "SELECT table_name FROM information_schema.tables " +
                     "WHERE table_schema = '" + schemaName + "'" +
@@ -77,7 +76,7 @@ public abstract class DatabaseStructureHandler {
 
             if(!foundTable){
                 System.out.println("Table " + tableName + " not found. Creating it...");
-                Statement createTable = con.createStatement();
+                Statement createTable = Global.dbConnection.createStatement();
                 createTable.executeUpdate("CREATE TABLE "+tableName+" ("+content+")");
                 createTable.close();
             }
@@ -89,9 +88,9 @@ public abstract class DatabaseStructureHandler {
 
 
 
-    public static void checkAndCreateType(Connection con, String typeName, String fields) throws SQLException {
+    public static void checkAndCreateType(String typeName, String fields) throws SQLException {
         try {
-        Statement createType = con.createStatement();
+        Statement createType = Global.dbConnection.createStatement();
         createType.executeUpdate(
                 "DO $$" +
                 "BEGIN" +
@@ -108,13 +107,13 @@ public abstract class DatabaseStructureHandler {
         }
     }
 
-    public static void createContentIfAbsent(Connection con) throws SQLException {
-        DatabaseCreator.createContentIfAbsent(con);
+    public static void createContentIfAbsent()throws SQLException {
+        DatabaseCreator.createContentIfAbsent();
     } 
 
-    public static void populateTable(Connection con, String tableName, String[] values) throws SQLException {
+    public static void populateTable(String tableName, String[] values) throws SQLException {
         try {
-            Statement contentCheck = con.createStatement();
+            Statement contentCheck = Global.dbConnection.createStatement();
             ResultSet contentResult = contentCheck.executeQuery("SELECT * FROM " + tableName);
             boolean hasContent = contentResult.next();
             contentCheck.close();
@@ -122,7 +121,7 @@ public abstract class DatabaseStructureHandler {
             if(!hasContent){
                 System.out.println("Table "+tableName+" is empty. Adding default values.");
                 for(String val : values){
-                    Statement addContent = con.createStatement();
+                    Statement addContent = Global.dbConnection.createStatement();
                     addContent.executeUpdate("INSERT INTO "+tableName+" VALUES ("+val+")");
                     addContent.close();
                 }

@@ -32,6 +32,7 @@ javac                   \
         src/LoginCredentials.java \
         src/DatabaseStructureHandler.java \
         src/DatabaseCreator.java \
+        src/Global.java \
 
 if [ $? -ne 0 ]; 
 then 

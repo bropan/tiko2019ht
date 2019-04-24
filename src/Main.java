@@ -21,14 +21,16 @@ public class Main {
         System.out.println("-------------------------------------------------------------------");
         System.out.println();
         try {
-            con = Init.init(s);
+            //Establishes connection, inits schema,tables,values
+            Init.init(s);
 
-            CLI.run(s,con);
+            CLI.run(s);
 
 
 
         } catch (SQLException e) {
-            System.out.println("Caught unhandled SQL exception: " + e.getMessage());
+            System.out.println("Caught unhandled SQL exception in Main: " + e.getMessage());
+            e.printStackTrace();
             if(con != null) try {
                 System.out.println("Rolling back!");
                 con.rollback();
@@ -36,7 +38,17 @@ public class Main {
                 System.out.println("Rollback failed! " + e2.getMessage());
             }
 			System.out.println("Aborting due to unhandled SQL exception.");
-        }             
+        } catch (Exception e) {
+            System.out.println("Unhandled exception in Main: " + e.getMessage());
+            e.printStackTrace();
+            if(con != null) try {
+                System.out.println("Rolling back!");
+                con.rollback();
+            } catch (SQLException e2){
+                System.out.println("Rollback failed! " + e2.getMessage());
+            }
+			System.out.println("Aborting due to unhandled exception.");
+        }            
  
         if (con != null) try {
             con.close();

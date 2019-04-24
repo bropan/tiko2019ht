@@ -29,59 +29,62 @@ public class CLI {
     private CLI(){
     }
 
-    public static void run(Scanner userInput, Connection con) throws SQLException {
+    public static void run(Scanner userInput) throws SQLException {
         System.out.println("Launching Sähkötärsky user interface.");
         System.out.println("Enter " + HELP + " for list of available commands.");
         System.out.println("");
 
         boolean continueRunning = true;
         while(continueRunning){
+            if(Global.dbConnection == null){
+                throw new IllegalArgumentException("Connection NULL in CLI!");
+            }
             System.out.print("Enter command: ");
             String command = userInput.nextLine();
 
             try {
-                con.setAutoCommit(false);
+                Global.dbConnection.setAutoCommit(false);
                 System.out.println();
-                continueRunning = commandHandler(command,userInput,con);
-                con.commit();
+                continueRunning = commandHandler(command,userInput);
+                Global.dbConnection.commit();
             } catch (Exception e) {
                 System.out.println("Unexpected exception happened in the user interface: " + e.getMessage());
                 e.printStackTrace();
-                con.rollback();
+                Global.dbConnection.rollback();
                 System.out.println("Rolled back, no changes made to database.");
             } finally {
                 System.out.println();
-                con.setAutoCommit(true);
+                Global.dbConnection.setAutoCommit(true);
             }
         }
     }
 
-    private static boolean commandHandler(String command, Scanner userInput, Connection con) throws SQLException {
+    private static boolean commandHandler(String command, Scanner userInput) throws SQLException {
         boolean continueRunning = true;
             switch(command){
                 case QUIT:
                     continueRunning = false;
                     break;
                 case ADD:
-                    addInteractive(userInput, con);
+                    addInteractive(userInput);
                     break;
                 case ADD_CUSTOMER:
-                    addCustomer(userInput, con);
+                    addCustomer(userInput);
                     break;
                 case ADD_WORKSITE:
-                    addWorksite(userInput, con);
+                    addWorksite(userInput);
                     break;
                 case CHARGEABLES:
-                    chargeables(userInput, con);
+                    chargeables(userInput);
                     break;
                 case SHOW_TABLE:
-                    showTable(userInput, con);
+                    showTable(userInput);
                     break;
                 case WRITE_CREDENTIALS:
                     writeCredentialsToFile(userInput, Main.LOGIN_CONFIG_FILE_PATH);
                     break;
                 case RESET_DATABASE:
-                    resetDatabase(userInput, con);
+                    resetDatabase(userInput);
                     break;
                 case HELP:
                     printHelp();
@@ -121,7 +124,7 @@ public class CLI {
         );
     }
 
-    public static void addInteractive(Scanner userInput, Connection con) throws SQLException {
+    public static void addInteractive(Scanner userInput) throws SQLException {
         System.out.println();
         System.out.println("--- Adding values ---");
         boolean adding = true;
@@ -136,7 +139,7 @@ public class CLI {
             if(answer >= 0){
                 String tableName = addOptions.get(answer);
                 System.out.println("You answered " + tableName);
-                boolean done = enterColumns(userInput, tableName, con);
+                boolean done = enterColumns(userInput, tableName);
                 if(done){
                     adding = false;
                 }
@@ -174,21 +177,21 @@ public class CLI {
         }
     }
 
-    private static void resetDatabase(Scanner userInput,Connection con) throws SQLException {
+    private static void resetDatabase(Scanner userInput) throws SQLException {
         boolean confirm = Utils.askYesOrNo(
                 "WARNING: Do you really want to reset the database? "
                 +"This will remove all entered data and replace it with default data!",
                 userInput
                 );
         if(confirm){
-            DatabaseStructureHandler.resetDatabase(con, Main.GLOBAL_SCHEMA); 
+            DatabaseStructureHandler.resetDatabase(Main.GLOBAL_SCHEMA); 
         }
     }
 
     //returns false if aborted
-    private static boolean enterColumns(Scanner userInput, String tableName, Connection con) throws SQLException {
+    private static boolean enterColumns(Scanner userInput, String tableName ) throws SQLException {
 
-        Statement getColumns = con.createStatement();
+        Statement getColumns = Global.dbConnection.createStatement();
         ResultSet rs = getColumns.executeQuery("SELECT * FROM "+tableName);
         ResultSetMetaData rsmd = rs.getMetaData();
 
@@ -198,14 +201,14 @@ public class CLI {
         System.out.println();
         String valuesAsString = "";
         for(int i=1; i <= columnCount; ++i){
-            String enteredValue = enterColumn(userInput,rs,i,con);
+            String enteredValue = enterColumn(userInput,rs,i);
             valuesAsString += i==1 ? enteredValue : "," + enteredValue;
         }
         System.out.println();
         getColumns.close();
 
         if(Utils.askYesOrNo("Insert " + valuesAsString + " into " + tableName + "?", userInput)){
-            Statement insertValues = con.createStatement();
+            Statement insertValues = Global.dbConnection.createStatement();
             insertValues.executeUpdate("INSERT INTO " + tableName + " VALUES (" +valuesAsString+")");
             System.out.println("Inserted " + valuesAsString + " into " + tableName);
         } else {
@@ -215,7 +218,7 @@ public class CLI {
         return true;
     }
     
-    private static String enterColumn(Scanner userInput, ResultSet rs, int column, Connection con) throws SQLException {
+    private static String enterColumn(Scanner userInput, ResultSet rs, int column ) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
         String label = rsmd.getColumnLabel(column);
         String name = rsmd.getColumnName(column);
@@ -252,7 +255,7 @@ public class CLI {
 
 
 
-    public static void showTable(Scanner userInput, Connection con) throws SQLException {
+    public static void showTable(Scanner userInput ) throws SQLException {
 
         ArrayList<String> options = new ArrayList<>(Arrays.asList(
             "asiakas",
@@ -266,7 +269,7 @@ public class CLI {
 
         int selection = Utils.askSelection("Show which table? ", options, userInput);
 
-        Statement showTable = con.createStatement();
+        Statement showTable = Global.dbConnection.createStatement();
         ResultSet rs = showTable.executeQuery("SELECT * FROM " + options.get(selection));
         ResultSetMetaData rsmd = rs.getMetaData();
 
@@ -295,7 +298,7 @@ public class CLI {
         }
     }
 
-    public static void chargeables(Scanner userInput, Connection con) throws SQLException {
+    public static void chargeables(Scanner userInput ) throws SQLException {
 
         ArrayList<String> options = new ArrayList<>(Arrays.asList(
             "add new work/utility",
@@ -304,15 +307,15 @@ public class CLI {
         int selection = Utils.askSelection("What do you want to do?", options, userInput);
         switch(selection){
             case 0:
-                addChargeable(userInput, con);
+                addChargeable(userInput);
                 break;
             case 1:
-                searchChargeable(userInput,con);
+                searchChargeable(userInput);
                 break;
         }
     }
 
-    public static void addChargeable(Scanner userInput, Connection con) throws SQLException {
+    public static void addChargeable(Scanner userInput ) throws SQLException {
         System.out.println("Adding utility/work that can be charged from the customer");
 
         String name = Utils.askUser("Enter name for the chargeable: ",userInput);
@@ -329,14 +332,14 @@ public class CLI {
                 "DEFAULT,'%s','%s','%s','%s','%s'"
                 ,name,unit,types.get(type),wares,price
                 );
-        Utils.askInsertion(userInput,con,"laskutettava",values);
+        Utils.askInsertion(userInput,"laskutettava",values);
     }
 
     //Find chargeable by name
-    public static int searchChargeable(Scanner userInput, Connection con) throws SQLException {
+    public static int searchChargeable(Scanner userInput ) throws SQLException {
         int selection = -1;
         String what = Utils.askUser("Enter name of chargeable to search for: ",userInput);
-        Statement search = con.createStatement();
+        Statement search = Global.dbConnection.createStatement();
         ResultSet rs = search.executeQuery(
                 "SELECT * FROM " + "laskutettava" + " WHERE nimi = '" +what+ "'");
         System.out.println("Results:");
@@ -367,11 +370,11 @@ public class CLI {
         return selection;
     }
 
-    public static void increaseChargeableWares(Scanner userInput, Connection con) throws SQLException {
+    public static void increaseChargeableWares(Scanner userInput ) throws SQLException {
 
     }
 
-    public static void addCustomer(Scanner userInput, Connection con) throws SQLException {
+    public static void addCustomer(Scanner userInput ) throws SQLException {
         System.out.println("Adding new user");
         String name = Utils.askUser("Enter name: ",userInput);
         String address = Utils.askUser("Enter address: ",userInput);
@@ -385,10 +388,10 @@ public class CLI {
                 "DEFAULT,'%s','%s','%s'"
                 ,name,address,options.get(type)
                 );
-        Utils.askInsertion(userInput,con,"asiakas",values);
+        Utils.askInsertion(userInput,"asiakas",values);
     }
 
-    public static void addWorksite(Scanner userInput, Connection con) throws SQLException {
+    public static void addWorksite(Scanner userInput ) throws SQLException {
         System.out.println("Adding a new worksite");
         String address = Utils.askUser("Enter address: ",userInput);
         ArrayList<String> options = new ArrayList<>(Arrays.asList(
@@ -402,7 +405,7 @@ public class CLI {
                 "DEFAULT,'%s','%s'"
                 ,address,options.get(type)
                 );
-        Utils.askInsertion(userInput,con,"tyokohde",values);
+        Utils.askInsertion(userInput,"tyokohde",values);
     }
 
 }

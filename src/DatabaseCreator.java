@@ -5,55 +5,55 @@ public class DatabaseCreator {
 
     private DatabaseCreator(){}
 
-    public static void createTypesIfAbsent(Connection con) throws SQLException {
+    public static void createTypesIfAbsent() throws SQLException {
         System.out.println("Checking that all required types exist...");
-        DatabaseStructureHandler.checkAndCreateType(con,
+        DatabaseStructureHandler.checkAndCreateType(
             "asiakas_tyyppi",
                 "'yrittaja','yksityinen'"
         ); 
-        DatabaseStructureHandler.checkAndCreateType(con,
+        DatabaseStructureHandler.checkAndCreateType(
             "maksun_tila",
                 "'maksamatta', 'muistutettu', 'perinnassa', 'maksettu'" 
         );
-        DatabaseStructureHandler.checkAndCreateType(con,
+        DatabaseStructureHandler.checkAndCreateType(
             "asiakas_tyyppi",
                 "'yrittaja','yksityinen'" 
         );
-        DatabaseStructureHandler.checkAndCreateType(con,
+        DatabaseStructureHandler.checkAndCreateType(
             "tyokohde_tyyppi",
                 "'kesamokki','asunto','muu'" 
         );
-        DatabaseStructureHandler.checkAndCreateType(con,
+        DatabaseStructureHandler.checkAndCreateType(
             "sopimus_tyyppi",
                 "'tuntipalkka','urakka'" 
         );
-        DatabaseStructureHandler.checkAndCreateType(con,
+        DatabaseStructureHandler.checkAndCreateType(
             "sopimus_tila",
                 "'suunnitelma','tarjous','sopimus'"
         );
-        DatabaseStructureHandler.checkAndCreateType(con,
+        DatabaseStructureHandler.checkAndCreateType(
             "lasku_tyyppi",
                 "'kertamaksu','osamaksu'" 
         );
-        DatabaseStructureHandler.checkAndCreateType(con,
+        DatabaseStructureHandler.checkAndCreateType(
             "lasku_tila",
                 "'kesken','valmis'" 
         );
-        DatabaseStructureHandler.checkAndCreateType(con,
+        DatabaseStructureHandler.checkAndCreateType(
             "lasku_maksun_tila",
                 "'maksamatta','maksettu'" 
         );
-        DatabaseStructureHandler.checkAndCreateType(con,
+        DatabaseStructureHandler.checkAndCreateType(
             "laskutettava_tyyppi",
                 "'tyo','tarvike'" 
         );
     }
 
-    public static void createTablesIfAbsent(Connection con, String schemaName) throws SQLException {
+    public static void createTablesIfAbsent(String schemaName) throws SQLException {
         System.out.println("Checking that all required tables exist...");
         String tableName = null;
 
-        DatabaseStructureHandler.checkAndCreateTable(con,schemaName,
+        DatabaseStructureHandler.checkAndCreateTable(schemaName,
                 "asiakas",
         "    asiakas_id SERIAL,                 "+
         "    nimi VARCHAR(128),                 "+
@@ -63,7 +63,7 @@ public class DatabaseCreator {
         ""
         );
 
-        DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
+        DatabaseStructureHandler.checkAndCreateTable(schemaName, 
                 "laskutettava",
             "laskutettava_id SERIAL,            "+
             "nimi VARCHAR(256),                 "+
@@ -75,7 +75,7 @@ public class DatabaseCreator {
             ""
         ); 
 
-        DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
+        DatabaseStructureHandler.checkAndCreateTable(schemaName, 
                 "tyokohde",
             "kohde_id SERIAL,                   "+
             "osoite VARCHAR(256),               "+
@@ -84,7 +84,7 @@ public class DatabaseCreator {
             ""
         ); 
 
-        DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
+        DatabaseStructureHandler.checkAndCreateTable(schemaName, 
                 "sopimus",
             "sopimus_id SERIAL,                                         "+
             "sopimustyyppi sopimus_tyyppi,                              "+
@@ -95,7 +95,7 @@ public class DatabaseCreator {
             ""
         ); 
 
-        DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
+        DatabaseStructureHandler.checkAndCreateTable(schemaName, 
                 "tyosuoritus",
             "tyosuoritus_id SERIAL,                                     "+
             "kohde_id INT,                                              "+
@@ -106,7 +106,7 @@ public class DatabaseCreator {
             ""
         );
 
-        DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
+        DatabaseStructureHandler.checkAndCreateTable(schemaName, 
                 "sisaltaa",
             "tyosuoritus_id INT,                                                        "+
             "laskutettava_id INT,                                                       "+
@@ -118,7 +118,7 @@ public class DatabaseCreator {
             ""
         ); 
 
-        DatabaseStructureHandler.checkAndCreateTable(con,schemaName, 
+        DatabaseStructureHandler.checkAndCreateTable(schemaName, 
                 "lasku",
             "lasku_id SERIAL,                                                       "+
             "sopimus_id INT,                                                        "+
@@ -137,7 +137,7 @@ public class DatabaseCreator {
         ); 
     }
 
-    public static void createContentIfAbsent(Connection con) throws SQLException {
+    public static void createContentIfAbsent() throws SQLException {
 
         System.out.println("Populating empty tables...");
 
@@ -145,7 +145,7 @@ public class DatabaseCreator {
             "DEFAULT, 'Matti Virtanen', 'peenistie 2', 'yksityinen'"    ,
             "DEFAULT, 'Esko Meikäläinen', 'pallipolku 69', 'yksityinen'" ,
             "DEFAULT, 'Tauno Salonen', 'kullikuja 666', 'yksityinen'"    ,
-        }; DatabaseStructureHandler.populateTable(con,
+        }; DatabaseStructureHandler.populateTable(
                 "asiakas", asiakasValues
         );
 
@@ -153,7 +153,7 @@ public class DatabaseCreator {
             "DEFAULT, 'peltotie 1', 'asunto'"           ,
             "DEFAULT, 'metsatie 2', 'kesamokki'"        ,
             "DEFAULT, 'mokkitie 3', 'kesamokki'"        ,
-        }; DatabaseStructureHandler.populateTable(con,
+        }; DatabaseStructureHandler.populateTable(
                 "tyokohde", tyokohdeValues
         );
 
@@ -161,7 +161,7 @@ public class DatabaseCreator {
             "DEFAULT, 'tyo', 'h', 'tyo', NULL, 15",
             "DEFAULT, 'pistorasia', 'kpl', 'tarvike', 100, 5",
             "DEFAULT, 'sahkojohto', 'm', 'tarvike', 1000, 1",
-        }; DatabaseStructureHandler.populateTable(con,
+        }; DatabaseStructureHandler.populateTable(
                 "laskutettava", laskutettavaValues
         );
 
@@ -169,7 +169,7 @@ public class DatabaseCreator {
             "DEFAULT, 'tuntipalkka', 'sopimus', 1 "  , 
             "DEFAULT, 'urakka', 'tarjous', 2 "      , 
             "DEFAULT, 'urakka', 'suunnitelma', 3 "  ,  
-        }; DatabaseStructureHandler.populateTable(con,
+        }; DatabaseStructureHandler.populateTable(
                 "sopimus", sopimusValues
         );
 
@@ -177,7 +177,7 @@ public class DatabaseCreator {
             "DEFAULT, 1, 1",
             "DEFAULT, 1, 1",
             "DEFAULT, 1, 1",
-        }; DatabaseStructureHandler.populateTable(con,
+        }; DatabaseStructureHandler.populateTable(
                 "tyosuoritus", tyosuoritusValues
         );
 
@@ -193,13 +193,13 @@ public class DatabaseCreator {
            "3, 1, 5, 1.0",
            "3, 2, 3, 1.0",
            "3, 3, 7, 1.0",
-        }; DatabaseStructureHandler.populateTable(con,
+        }; DatabaseStructureHandler.populateTable(
                 "sisaltaa", sisaltaaValues
         );
 
         String[] laskuValues = {
             "DEFAULT, 1, 'kertamaksu', 'kesken', NULL, NULL, 0, 'maksamatta', NULL, 0, 0", 
-        }; DatabaseStructureHandler.populateTable(con,
+        }; DatabaseStructureHandler.populateTable(
                 "lasku", laskuValues
         );
 

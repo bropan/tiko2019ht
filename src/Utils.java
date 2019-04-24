@@ -126,9 +126,9 @@ public class Utils {
         return selection;
     }
 
-    public static void askInsertion(Scanner userInput, Connection con, String tableName, String values) throws SQLException {
+    public static void askInsertion(Scanner userInput, String tableName, String values) throws SQLException {
         if( Utils.askYesOrNo("Do you want to add the values (" + values + ") into the table " + tableName + "?", userInput) ){
-            Statement insertion = con.createStatement();
+            Statement insertion = Global.dbConnection.createStatement();
             insertion.executeUpdate("INSERT INTO " + tableName + " VALUES (" +values+ ")");
             insertion.close();
             System.out.println("Values (" + values + ") were added to table "+tableName+".");
