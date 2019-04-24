@@ -50,7 +50,7 @@ CREATE TABLE tyosuoritus (
     FOREIGN KEY (kohde_id) REFERENCES tyokohde(kohde_id),
     FOREIGN KEY (sopimus_id) REFERENCES sopimus(sopimus_id),
     PRIMARY KEY (tyosuoritus_id)
-)
+);
 
 CREATE TABLE sisaltaa ( 
     tyosuoritus_id INT, 
