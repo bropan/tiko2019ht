@@ -24,7 +24,6 @@ CREATE TABLE laskutettava (
     tyyppi laskutettava_tyyppi, 
     varastotilanne INT, 
     sisaanostohinta NUMERIC(2),
-    myyntihinta NUMERIC(2),
     PRIMARY KEY(laskutettava_id) 
 ); 
 
