@@ -165,6 +165,8 @@ public class DatabaseCreator {
             "DEFAULT, 'pistorasia', 'kpl', 'tarvike', 100, 10",
             "DEFAULT, 'pistorasia', 'kpl', 'tarvike', 0, 3",
             "DEFAULT, 'sahkojohto', 'm', 'tarvike', 1000, 1",
+            "DEFAULT, 'sahkojohto', 'm', 'tarvike', 2000, 0.5",
+            "DEFAULT, 'lamppu', 'kpl', 'tarvike', 500, 1",
         }; DatabaseStructureHandler.populateTable(
                 "laskutettava", laskutettavaValues
         );
@@ -186,9 +188,11 @@ public class DatabaseCreator {
         );
 
         String[] sisaltaaValues = {
-           "1, 1, 5, 1.0",
-           "1, 2, 2, 1.0",
-           "1, 3, 10, 1.0",
+           "1, 1, 20, 1.0",
+           "1, 2, 20, 1.0",
+           "1, 3, 2, 1.0",
+           "1, 6, 60, 1.0",
+           "1, 8, 15, 1.0",
 
            "2, 1, 6, 1.0",
            "2, 2, 1, 1.0",
