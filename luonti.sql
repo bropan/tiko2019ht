@@ -76,5 +76,6 @@ CREATE TABLE lasku (
     erat INT, 
     edellinen INT,
     FOREIGN KEY (sopimus_id) REFERENCES sopimus(sopimus_id), 
+    FOREIGN KEY (edellinen) REFERENCES lasku(lasku_id),
     PRIMARY KEY(lasku_id) 
 ); 
