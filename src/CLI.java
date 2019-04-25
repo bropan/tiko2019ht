@@ -80,7 +80,7 @@ public class CLI {
                     reportOne();
                     break;
                 case REPORT_TWO:
-                    System.out.println("not implemented");
+                    reportTwo();
                     break;
                 case ADD:
                     addInteractive(userInput);
@@ -167,22 +167,125 @@ public class CLI {
             3,
             1
         };
-        String estimate = priceEstimate(r1items,r1counts);
-        if(estimate != null){
-            System.out.println(estimate);
-            System.out.println("Writing to file " + fileName + "...");
-            try {
-                PrintWriter pw = new PrintWriter(fileName);
-                pw.println(estimate);
-                pw.close();
-                System.out.println("File written. Report created.");
-            } catch (Exception e){
-                System.out.println("Error when writing " + fileName + ": " + e.getMessage());
-                e.printStackTrace();
-            }
-        } else {
-            System.out.println("Report creation failed.");
+        Utils.report(priceEstimate(r1items,r1counts), fileName);
+    }
+
+    public static void reportTwo() throws SQLException {
+        final String fileName = "raportti_2.txt";
+        final int billId = 1;
+        Utils.report(hourBill(billId), fileName);
+    }
+
+
+    public static String hourBill(int billId) throws SQLException {
+        String bill = "";
+        final String sep = 
+            "---------------------------------------------------------------------------------------------";
+        System.out.println("Creating a printable version of a hour-based bill id: " + billId + "...");
+        BigDecimal totalPrice = new BigDecimal(0);
+
+        bill += "################################################################################" + "\n";
+        bill += "\n";
+        bill += "--------------------------------------------------------------------------------" + "\n";
+        bill += "|                                LASKU                                          |" + "\n";
+        bill += "--------------------------------------------------------------------------------" + "\n";
+        bill += "\n";
+
+        bill += "Tmi Sähkötärsky (Seppo Tärsky)";
+        bill += "\n";
+        bill += "\n";
+
+        Statement getCustomer = Global.dbConnection.createStatement();
+        ResultSet customerRS = getCustomer.executeQuery(
+                LongSQLQueryFunctions.customerByBillId(billId)
+        );
+        String customerName = "";
+        String customerAddress = "";
+        if(customerRS.next()){
+            customerName = customerRS.getString("nimi");
+            customerAddress = customerRS.getString("osoite");
         }
+        getCustomer.close();
+        bill += String.format("Asiakas: %s", customerName) + "\n";
+        bill += String.format("Osoite: %s", customerAddress) + "\n";
+        bill += "\n";
+
+        bill += "Erittely töissä käytetyistä tarvikkeista: " + "\n";
+        bill += String.format("%80.80s", sep);
+        bill += "\n";
+        Statement getUtilities = Global.dbConnection.createStatement();
+        ResultSet utilityRS = getUtilities.executeQuery(
+            LongSQLQueryFunctions.chargeablesByBillId(billId,"tarvike")
+        );
+        while(utilityRS.next()){
+            int count  = utilityRS.getInt("lkm");
+            int id = utilityRS.getInt("laskutettava_id");
+            String name = utilityRS.getString("nimi");
+            String unit = utilityRS.getString("yksikko");
+            BigDecimal price  = utilityRS.getBigDecimal("hinta");
+            price = getSellPrice(price);
+            totalPrice = totalPrice.add(price);
+            String combo = String.format("%30.30s | %10.10s", name, count + unit);
+            String combo2 = String.format("%50.50s (Nro: %5.5s) | %8.8s€ |", combo, id, price);
+            bill += String.format("|%79.79s",combo2);
+            bill += "\n";
+        } 
+        bill += String.format("%80.80s", sep);
+        bill += "\n";
+        bill += "\n";
+        getUtilities.close();
+
+        bill += "Erittely työtunneista: " + "\n";
+        bill += String.format("%80.80s", sep);
+        bill += "\n";
+        Statement getWork = Global.dbConnection.createStatement();
+        ResultSet workRS = getWork.executeQuery(
+            LongSQLQueryFunctions.chargeablesByBillId(billId,"tyo")
+        );
+        while(workRS.next()){
+            int count  = workRS.getInt("lkm");
+            int id = workRS.getInt("laskutettava_id");
+            String name = workRS.getString("nimi");
+            String unit = workRS.getString("yksikko");
+            BigDecimal price  = workRS.getBigDecimal("hinta");
+            price = getSellPrice(price);
+            totalPrice = totalPrice.add(price);
+            String combo = String.format("%30.30s | %10.10s", name, count + unit);
+            String combo2 = String.format("%50.50s (Nro: %5.5s) | %8.8s€ |", combo, id, price);
+            bill += String.format("|%79.79s",combo2);
+            bill += "\n";
+        }         
+        bill += String.format("%80.80s", sep);
+        bill += "\n";
+        bill += "\n";
+        getWork.close();
+
+        bill += String.format("%68.68s %8.8s€", "Kokonaissumma: ", totalPrice);
+        bill += "\n";
+        bill += "\n";
+
+        Statement getHouseholdWork = Global.dbConnection.createStatement();
+        ResultSet hhRS = getHouseholdWork.executeQuery(
+                LongSQLQueryFunctions.householdWork(billId)
+        );
+        if(hhRS.next()){
+            BigDecimal vahennys = getSellPrice(hhRS.getBigDecimal("hinta"));
+            vahennys = vahennys.divide(new BigDecimal(2));
+            String str = "Kotitalousvähennyskelpoisuus (asunnossa/kesämökillä tehty työ): ";
+            bill += String.format("%68.68s %8.8s€", str, vahennys);
+            bill += "\n";
+        }
+        getHouseholdWork.close();
+
+        bill += "\n";
+        bill += "################################################################################" + "\n";
+        System.out.println("Bill created.");
+        return bill;
+    }
+
+    public static BigDecimal getSellPrice(BigDecimal buyPrice){
+        buyPrice = buyPrice.multiply(new BigDecimal(Global.priceMultiplier));
+        return buyPrice;
     }
 
     public static void addInteractive(Scanner userInput) throws SQLException {
@@ -613,7 +716,7 @@ public class CLI {
             );
             if(rs.next()){
                 BigDecimal price = rs.getBigDecimal("hinta");
-                price = price.multiply(new BigDecimal(Global.priceMultiplier));
+                price = getSellPrice(price);
                 String name = rs.getString("nimi");
                 String unit = rs.getString("yksikko");
                 String countStr = count + unit;

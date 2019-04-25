@@ -33,6 +33,7 @@ javac                   \
         src/DatabaseStructureHandler.java \
         src/DatabaseCreator.java \
         src/Global.java \
+        src/LongSQLQueryFunctions.java \
 
 if [ $? -ne 0 ]; 
 then 
