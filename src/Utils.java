@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.io.PrintWriter;
 
 import java.sql.Statement;
 import java.sql.SQLException;
@@ -135,5 +136,37 @@ public class Utils {
         } else {
             System.out.println("Aborted, no changes made.");
         }
+    }
+
+    public static boolean report(String content, String fileName){
+        if(content == null) throw new IllegalArgumentException("Illegal report content: NULL");
+        if(fileName == null) throw new IllegalArgumentException("Illegal report filename: NULL");
+        if(fileName == "") throw new IllegalArgumentException("Illegal report filename: Empty");
+        if(writeReport(content, fileName)) {
+            System.out.println();
+            System.out.println(content);
+            System.out.println("Report printed succesfully.");
+            return true;
+        } else {
+            System.out.println("Report print failed.");
+            return false;
+        }
+    }
+
+    private static boolean writeReport(String content, String fileName){
+        if(content==null) throw new IllegalArgumentException("Attempting to write a report with NULL content!");
+
+        System.out.println("Writing to file " + fileName + "...");
+        try {
+            PrintWriter pw = new PrintWriter(fileName);
+            pw.println(content);
+            pw.close();
+            System.out.println("File written. Report created.");
+        } catch (Exception e){
+            System.out.println("Error while writing " + fileName + ": " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 }
