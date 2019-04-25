@@ -195,6 +195,30 @@ public class CLI {
         bill += "\n";
         bill += "\n";
 
+        java.sql.Date billingDate = null;
+        java.sql.Date dueDate = null;
+        int part = 1;
+        int parts = 1;
+        String billNumber = "";
+        Statement billInfo = Global.dbConnection.createStatement();
+        ResultSet billRS = billInfo.executeQuery(
+                "SELECT * FROM lasku WHERE lasku_id = " + billId
+        );
+        if(billRS.next()){
+            billingDate = billRS.getDate("laskutuspvm");
+            dueDate = billRS.getDate("erapvm");
+            part = billRS.getInt("era");
+            part = part==0 ? 1 : part;
+            parts = billRS.getInt("erat");
+            parts = parts==0 ? 1 : parts;
+            billNumber = billRS.getString("lasku_id");
+        }
+        bill += "Lasku nro: " + billNumber + "\n";
+        bill += "Erä: (" + part +"/"+ parts + ")" + "\n";
+        bill += "Laskutuspäivämäärä: " + billingDate;
+        bill += "\n";
+        bill += "\n";
+
         Statement getCustomer = Global.dbConnection.createStatement();
         ResultSet customerRS = getCustomer.executeQuery(
                 LongSQLQueryFunctions.customerByBillId(billId)
@@ -277,6 +301,9 @@ public class CLI {
         }
         getHouseholdWork.close();
 
+        bill += "\n";
+        bill += "Eräpäivä: " + dueDate;
+        bill += "\n";
         bill += "\n";
         bill += "################################################################################" + "\n";
         System.out.println("Bill created.");
