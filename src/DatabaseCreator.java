@@ -113,7 +113,8 @@ public class DatabaseCreator {
             "lkm INT,                                                                   "+
             "alennus NUMERIC,                                                           "+
             "FOREIGN KEY (tyosuoritus_id) REFERENCES tyosuoritus(tyosuoritus_id),       "+ 
-            "FOREIGN KEY (laskutettava_id) REFERENCES laskutettava(laskutettava_id)     "+
+            "FOREIGN KEY (laskutettava_id) REFERENCES laskutettava(laskutettava_id),    "+
+            "PRIMARY KEY (tyosuoritus_id,laskutettava_id)                               "+
             ""
         ); 
 
@@ -146,7 +147,7 @@ public class DatabaseCreator {
             "DEFAULT, 'Esko Meikäläinen', 'Pallopolku 96', 'yksityinen'"  ,
             "DEFAULT, 'Tauno Salonen', 'Kollikuja 999', 'yksityinen'"     ,
             "DEFAULT, 'Jooseppi Virtanen', 'Kiertotie 123', 'yksityinen'" ,
-            "DEFAULT, 'Oy Aisankannattaja Ab', 'Kaartotie 7B' 'yrittaja'" ,
+            "DEFAULT, 'Oy Aisankannattaja Ab', 'Kaartotie 7B', 'yrittaja'" ,
             "DEFAULT, 'Penaali Oy', 'Kynätie 7', 'yrittaja'"              ,
             "DEFAULT, 'Mestarifirma Oy', 'Mahtavuudenkatu 2', 'yrittaja'" ,
             "DEFAULT, 'Ari Vatanen', 'Relaatiokatu 78', 'yksityinen'"     ,
