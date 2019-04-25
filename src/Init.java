@@ -50,10 +50,14 @@ public class Init {
                 Runtime.getRuntime().addShutdownHook( 
                     new Thread() {
                         public void run(){
+                            System.out.println();
                             System.out.println("Shutting down...");
-                            System.out.println("Closing connection...");
                             try {
                                 if(Global.dbConnection != null){
+                                    System.out.print("Aborting... ");
+                                    Global.dbConnection.abort(Runnable::run);
+                                    System.out.println("Aborted.");
+                                    System.out.print("Closing connection... ");
                                     Global.dbConnection.close();
                                 } else {
                                     System.out.println("Connection null!");
