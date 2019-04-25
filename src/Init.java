@@ -47,6 +47,25 @@ public class Init {
                 String connectionTarget = PROTOCOL+"//"+SERVER+":"+ PORT+"/"+DATABASE;
                 System.out.println("Establishing connection to: " + connectionTarget);
                 Global.dbConnection = DriverManager.getConnection(connectionTarget,username,password);
+                Runtime.getRuntime().addShutdownHook( 
+                    new Thread() {
+                        public void run(){
+                            System.out.println("Shutting down...");
+                            System.out.println("Closing connection...");
+                            try {
+                                if(Global.dbConnection != null){
+                                    Global.dbConnection.close();
+                                } else {
+                                    System.out.println("Connection null!");
+                                }
+                            } catch (SQLException e){
+                                System.out.println("Could not close connection!");
+                                e.printStackTrace();
+                            }
+                            System.out.println("Connection closed.");
+                        }
+                    }
+                );
             } catch (SQLException e){
                 System.out.println("SQLException occurred: " + e.getMessage());
                 lastTimeFailed = true;
