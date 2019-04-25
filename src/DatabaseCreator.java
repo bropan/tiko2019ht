@@ -70,7 +70,7 @@ public class DatabaseCreator {
             "yksikko VARCHAR(64),               "+
             "tyyppi laskutettava_tyyppi,        "+
             "varastotilanne INT,                "+
-            "sisaanostohinta NUMERIC(2),        "+
+            "sisaanostohinta NUMERIC(10,2),     "+
             "PRIMARY KEY(laskutettava_id)       "+
             ""
         ); 
