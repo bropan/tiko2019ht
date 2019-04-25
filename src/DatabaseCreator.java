@@ -113,8 +113,7 @@ public class DatabaseCreator {
             "lkm INT,                                                                   "+
             "alennus NUMERIC,                                                           "+
             "FOREIGN KEY (tyosuoritus_id) REFERENCES tyosuoritus(tyosuoritus_id),       "+ 
-            "FOREIGN KEY (laskutettava_id) REFERENCES laskutettava(laskutettava_id),    "+
-            "PRIMARY KEY (tyosuoritus_id,laskutettava_id)                               "+
+            "FOREIGN KEY (laskutettava_id) REFERENCES laskutettava(laskutettava_id)     "+
             ""
         ); 
 
@@ -199,7 +198,7 @@ public class DatabaseCreator {
             "DEFAULT, 'sahkojohto', 'm', 'tarvike', 2000, 0.5",
             "DEFAULT, 'lamppu', 'kpl', 'tarvike', 500, 1",
             "DEFAULT, 'loisteputki', 'kpl', 'tarvike', '150', 2",
-            "DEFAULT, 'kolmivaihekilowattituntimittari', 'kpl', 'tarvike', 10",
+            "DEFAULT, 'kolmivaihekilowattituntimittari', 'kpl', 'tarvike', 10, 150",
 
         }; DatabaseStructureHandler.populateTable(
                 "laskutettava", laskutettavaValues
