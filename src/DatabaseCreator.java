@@ -113,8 +113,7 @@ public class DatabaseCreator {
             "lkm INT,                                                                   "+
             "alennus NUMERIC,                                                           "+
             "FOREIGN KEY (tyosuoritus_id) REFERENCES tyosuoritus(tyosuoritus_id),       "+ 
-            "FOREIGN KEY (laskutettava_id) REFERENCES laskutettava(laskutettava_id),    "+
-            "PRIMARY KEY (tyosuoritus_id,laskutettava_id)                               "+
+            "FOREIGN KEY (laskutettava_id) REFERENCES laskutettava(laskutettava_id)     "+
             ""
         ); 
 
