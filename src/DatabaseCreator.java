@@ -153,7 +153,7 @@ public class DatabaseCreator {
             "DEFAULT, 'Ari Vatanen', 'Relaatiokatu 78', 'yksityinen'"     ,
             "DEFAULT, 'Heikki Hyyrö', 'Mestarintie 12B', 'yksityinen'"    ,
             "DEFAULT, 'Hwang Dae-du', 'Soulinkuja 17', 'yksityinen'"      ,
-            "DEFAULT, 'Laitevalmistaja Oy, 'Mutaojankatu 9', 'yrittaja'"  ,
+            "DEFAULT, 'Laitevalmistaja Oy', 'Mutaojankatu 9', 'yrittaja'" ,
             "DEFAULT, 'Tmi Lukkoseppämies', 'Karalahdentie 2', 'yrittaja'",
             "DEFAULT, 'Superhyperfirma Oy', 'Parhaudentie 1', 'yrittaja'" ,
             "DEFAULT, 'Metsänsahaus Oy', 'Sysimetsä 8', 'yrittaja'"       ,
